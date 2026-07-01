@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,8 +18,8 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.ruoyi.common.config.RuoYiConfig;
+import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
-import com.ruoyi.framework.config.ServerConfig;
 
 /**
  * 二维码生成工具
@@ -32,9 +32,6 @@ public class QrCodeUtil
     /** APP 下载页基础 URL，二维码中将附带 invitePhone 参数 */
     @Value("${batch.app.downloadUrl:https://batchvideo.example.com/download}")
     private String appDownloadUrl;
-
-    @Autowired
-    private ServerConfig serverConfig;
 
     /**
      * 生成带邀请手机号的注册二维码并上传到文件服务器
@@ -50,12 +47,27 @@ public class QrCodeUtil
             BufferedImage image = createQrImage(content, 300, 300);
             byte[] imageBytes = imageToBytes(image, "png");
             String fileName = uploadQrCode(imageBytes, phone);
-            return serverConfig.getUrl() + fileName;
+            return getServerUrl() + fileName;
         }
         catch (Exception e)
         {
             throw new RuntimeException("二维码生成失败：" + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 获取当前服务访问地址（域名+端口+上下文路径）
+     */
+    private String getServerUrl()
+    {
+        HttpServletRequest request = ServletUtils.getRequest();
+        if (request == null)
+        {
+            return "";
+        }
+        StringBuffer url = request.getRequestURL();
+        String contextPath = request.getServletContext().getContextPath();
+        return url.delete(url.length() - request.getRequestURI().length(), url.length()).append(contextPath).toString();
     }
 
     /**
