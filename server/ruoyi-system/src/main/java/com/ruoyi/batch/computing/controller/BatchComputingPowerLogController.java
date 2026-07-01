@@ -30,7 +30,7 @@ public class BatchComputingPowerLogController extends BaseController
      * 查询算力消耗日志列表
      */
     @PreAuthorize("@ss.hasPermi('batch:customer:query')")
-    @Log(title = "算力消耗日志", businessType = BusinessType.QUERY)
+    @Log(title = "算力消耗日志", businessType = BusinessType.OTHER)
     @GetMapping("/list")
     public TableDataInfo list(BatchComputingPowerLog log)
     {
