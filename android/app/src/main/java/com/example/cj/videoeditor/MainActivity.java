@@ -15,6 +15,7 @@ import com.example.cj.videoeditor.activity.LoginActivity;
 import com.example.cj.videoeditor.ui.home.HomeFragment;
 import com.example.cj.videoeditor.utils.AppConfig;
 import com.example.cj.videoeditor.utils.SharedPrefUtil;
+import com.example.cj.videoeditor.utils.ToastUtil;
 import com.example.cj.videoeditor.ui.aicreation.AiCreationFragment;
 import com.example.cj.videoeditor.ui.watermark.WatermarkFragment;
 import com.example.cj.videoeditor.ui.profile.ProfileFragment;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout bottomNavigation;
     private Fragment currentFragment;
     private int selectedTab = 0;
+    private long lastBackPressTime = 0;
 
     private final int[] navIds = {R.id.nav_home, R.id.nav_ai_creation, R.id.nav_watermark, R.id.nav_profile};
     private final int[] navIcons = {R.drawable.ic_home, R.drawable.ic_ai_creation, R.drawable.ic_watermark, R.drawable.ic_profile};
@@ -86,6 +88,17 @@ public class MainActivity extends AppCompatActivity {
             boolean selected = i == index;
             ivIcon.setColorFilter(selected ? selectedColor : unselectedColor);
             tvLabel.setTextColor(selected ? selectedColor : unselectedColor);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastBackPressTime > 2000) {
+            lastBackPressTime = currentTime;
+            ToastUtil.show(this, R.string.press_again_to_exit);
+        } else {
+            super.onBackPressed();
         }
     }
 
