@@ -37,3 +37,7 @@ replay_pid*
 # Keystore files
 *.jks
 *.keystore
+
+# Test artifacts
+window_dump.xml
+scripts/generate1.py
