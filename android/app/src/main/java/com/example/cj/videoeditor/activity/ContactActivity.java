@@ -8,22 +8,22 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.adapter.ContactAdapter;
 import com.example.cj.videoeditor.bean.Contact;
-import com.example.cj.videoeditor.mock.MockData;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.ToastUtil;
 import java.util.List;
 
 public class ContactActivity extends BaseActivity {
 
     @Override
-    protected int getLayoutId() {
+    protected int getContentLayoutId() {
         return R.layout.activity_contact;
     }
 
     @Override
     protected void initViews() {
         setTitle(getString(R.string.contact));
-        Contact online = MockData.getMockOnlineService();
-        Contact headquarter = MockData.getMockHeadquarter();
+        Contact online = MockDataProvider.getMockOnlineService();
+        Contact headquarter = MockDataProvider.getMockHeadquarter();
 
         findViewById(R.id.tv_online_phone).setOnClickListener(v -> dial(online.getPhone()));
         findViewById(R.id.tv_headquarter_phone).setOnClickListener(v -> dial(headquarter.getPhone()));
@@ -33,7 +33,7 @@ public class ContactActivity extends BaseActivity {
 
         RecyclerView rvContacts = findViewById(R.id.rv_contacts);
         rvContacts.setLayoutManager(new LinearLayoutManager(this));
-        List<Contact> contacts = MockData.getMockContacts();
+        List<Contact> contacts = MockDataProvider.getMockContacts();
         rvContacts.setAdapter(new ContactAdapter(contacts));
     }
 

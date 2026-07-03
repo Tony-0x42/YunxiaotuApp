@@ -12,4 +12,9 @@ public class Clip {
         this.videoUrl = videoUrl;
         this.mirrored = mirrored;
     }
+
+    public String getId() { return id; }
+    public int getIndex() { return index; }
+    public String getVideoUrl() { return videoUrl; }
+    public boolean isMirrored() { return mirrored; }
 }

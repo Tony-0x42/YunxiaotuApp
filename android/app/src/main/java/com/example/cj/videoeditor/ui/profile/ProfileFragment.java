@@ -11,15 +11,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import com.example.cj.videoeditor.AppConfig;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.activity.AgreementActivity;
 import com.example.cj.videoeditor.activity.CustomerServiceActivity;
 import com.example.cj.videoeditor.activity.EditProfileActivity;
 import com.example.cj.videoeditor.activity.LoginActivity;
 import com.example.cj.videoeditor.activity.PrivacyActivity;
-import com.example.cj.videoeditor.model.User;
-import com.example.cj.videoeditor.utils.MockData;
+import com.example.cj.videoeditor.bean.User;
+import com.example.cj.videoeditor.utils.AppConfig;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.PhoneUtil;
 import com.example.cj.videoeditor.utils.SharedPrefUtil;
 import com.example.cj.videoeditor.utils.ToastUtil;
@@ -75,11 +75,11 @@ public class ProfileFragment extends Fragment {
         boolean vip = SharedPrefUtil.getBoolean(requireContext(), AppConfig.SP_KEY_USER_VIP, false);
         String expire = SharedPrefUtil.getString(requireContext(), AppConfig.SP_KEY_USER_VIP_EXPIRE, "");
         if (phone.isEmpty()) {
-            User mock = MockData.getUser();
-            phone = mock.phone;
-            name = mock.name;
-            vip = mock.vip;
-            expire = mock.vipExpire;
+            User mock = MockDataProvider.getUser();
+            phone = mock.getPhone();
+            name = mock.getName();
+            vip = mock.isVip();
+            expire = mock.getVipExpire();
         }
         tvName.setText(name);
         tvPhone.setText(PhoneUtil.maskPhone(phone));
@@ -89,9 +89,9 @@ public class ProfileFragment extends Fragment {
     private void setupMenu(View root, int menuId, String title, String value, View.OnClickListener listener) {
         View menu = root.findViewById(menuId);
         TextView tvTitle = menu.findViewById(R.id.tv_title);
-        TextView tvValue = menu.findViewById(R.id.tv_value);
+        TextView tvExtra = menu.findViewById(R.id.tv_extra);
         tvTitle.setText(title);
-        tvValue.setText(value);
+        tvExtra.setText(value);
         if (listener != null) {
             menu.setOnClickListener(listener);
         }

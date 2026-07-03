@@ -14,4 +14,11 @@ public class VideoGroup {
         this.generatedCount = generatedCount;
         this.maxLimit = maxLimit;
     }
+
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getCreateDate() { return createDate; }
+    public int getGeneratedCount() { return generatedCount; }
+    public int getMaxLimit() { return maxLimit; }
+    public int getMaxCount() { return maxLimit; }
 }

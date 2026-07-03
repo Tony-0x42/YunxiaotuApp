@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.adapter.DocumentAdapter;
 import com.example.cj.videoeditor.bean.Document;
-import com.example.cj.videoeditor.mock.MockData;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class DocumentActivity extends BaseActivity {
     private List<Document> allDocuments;
 
     @Override
-    protected int getLayoutId() {
+    protected int getContentLayoutId() {
         return R.layout.activity_document;
     }
 
@@ -51,7 +51,7 @@ public class DocumentActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-        allDocuments = MockData.getMockDocuments();
+        allDocuments = MockDataProvider.getMockDocuments();
         filterDocuments(0);
     }
 

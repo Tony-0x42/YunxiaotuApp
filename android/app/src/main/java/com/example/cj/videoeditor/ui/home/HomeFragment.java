@@ -22,10 +22,10 @@ import com.example.cj.videoeditor.activity.DocumentActivity;
 import com.example.cj.videoeditor.activity.LearningActivity;
 import com.example.cj.videoeditor.adapter.BannerAdapter;
 import com.example.cj.videoeditor.adapter.HomeMenuAdapter;
-import com.example.cj.videoeditor.model.Announcement;
-import com.example.cj.videoeditor.model.Banner;
-import com.example.cj.videoeditor.model.HomeMenu;
-import com.example.cj.videoeditor.utils.MockData;
+import com.example.cj.videoeditor.bean.Announcement;
+import com.example.cj.videoeditor.bean.Banner;
+import com.example.cj.videoeditor.bean.HomeMenu;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.ToastUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +63,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadBanners() {
-        banners = MockData.getBanners();
+        banners = MockDataProvider.getBanners();
         bannerAdapter = new BannerAdapter(banners);
         viewPagerBanner.setAdapter(bannerAdapter);
         setupIndicator();
@@ -107,17 +107,15 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadAnnouncement() {
-        Announcement a = MockData.getAnnouncement();
+        Announcement a = MockDataProvider.getAnnouncement();
         tvAnnouncementTitle.setText(a.title);
         tvAnnouncementChampion.setText(String.format("%s - ¥%s", a.championName, a.amount));
     }
 
     private void loadMenus() {
-        List<HomeMenu> menus = MockData.getHomeMenus();
+        List<HomeMenu> menus = MockDataProvider.getHomeMenus();
         recyclerMenu.setLayoutManager(new GridLayoutManager(getContext(), 4));
-        HomeMenuAdapter adapter = new HomeMenuAdapter(menus);
-        recyclerMenu.setAdapter(adapter);
-        adapter.setOnItemClickListener((menu, position) -> {
+        HomeMenuAdapter adapter = new HomeMenuAdapter(menus, (menu, position) -> {
             switch (position) {
                 case 0:
                     startActivity(new Intent(getContext(), LearningActivity.class));

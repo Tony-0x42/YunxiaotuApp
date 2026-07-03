@@ -18,12 +18,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.cj.videoeditor.AppConfig;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.activity.AiCreationEditActivity;
 import com.example.cj.videoeditor.adapter.VideoGroupAdapter;
-import com.example.cj.videoeditor.model.VideoGroup;
-import com.example.cj.videoeditor.utils.MockData;
+import com.example.cj.videoeditor.bean.VideoGroup;
+import com.example.cj.videoeditor.utils.AppConfig;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.SharedPrefUtil;
 import com.example.cj.videoeditor.utils.ToastUtil;
 import java.util.ArrayList;
@@ -100,15 +100,15 @@ public class AiCreationFragment extends Fragment {
     }
 
     private void loadGroups() {
-        allGroups = MockData.getVideoGroups();
+        allGroups = MockDataProvider.getVideoGroups();
         displayGroups.clear();
         displayGroups.addAll(allGroups);
         recyclerGroups.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new VideoGroupAdapter(displayGroups);
         recyclerGroups.setAdapter(adapter);
-        adapter.setOnItemActionListener(new VideoGroupAdapter.OnItemActionListener() {
+        adapter.setOnGroupActionListener(new VideoGroupAdapter.OnGroupActionListener() {
             @Override
-            public void onEdit(VideoGroup group) {
+            public void onGroupClick(VideoGroup group) {
                 Intent intent = new Intent(getContext(), AiCreationEditActivity.class);
                 intent.putExtra("group_id", group.id);
                 intent.putExtra("group_name", group.name);
@@ -116,12 +116,13 @@ public class AiCreationFragment extends Fragment {
             }
 
             @Override
-            public void onDelete(VideoGroup group, int position) {
+            public void onGroupDelete(VideoGroup group) {
                 new AlertDialog.Builder(requireContext())
                         .setTitle(R.string.confirm_delete)
                         .setMessage("删除后将清空本组全部素材与生成记录，是否继续？")
                         .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                            displayGroups.remove(position);
+                            int position = displayGroups.indexOf(group);
+                            displayGroups.remove(group);
                             allGroups.remove(group);
                             adapter.notifyDataSetChanged();
                             updateEmptyView();

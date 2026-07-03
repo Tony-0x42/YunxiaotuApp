@@ -14,4 +14,10 @@ public class Document {
         this.updateTime = updateTime;
         this.content = content;
     }
+
+    public String getId() { return id; }
+    public String getTitle() { return title; }
+    public String getCategory() { return category; }
+    public String getUpdateTime() { return updateTime; }
+    public String getContent() { return content; }
 }

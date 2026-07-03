@@ -14,4 +14,8 @@ public class ProfileMenu {
     public ProfileMenu(String title, int iconRes) {
         this(title, iconRes, "");
     }
+
+    public String getTitle() { return title; }
+    public int getIconRes() { return iconRes; }
+    public String getExtra() { return extra; }
 }

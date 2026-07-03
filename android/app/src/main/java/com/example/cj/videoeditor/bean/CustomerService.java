@@ -10,4 +10,8 @@ public class CustomerService {
         this.serviceTime = serviceTime;
         this.onlineUrl = onlineUrl;
     }
+
+    public String getPhone() { return phone; }
+    public String getServiceTime() { return serviceTime; }
+    public String getOnlineUrl() { return onlineUrl; }
 }

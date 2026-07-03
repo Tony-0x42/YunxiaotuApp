@@ -12,4 +12,8 @@ public class WatermarkResult {
         this.imageUrls = imageUrls;
         this.text = text;
     }
+
+    public String getVideoUrl() { return videoUrl; }
+    public List<String> getImageUrls() { return imageUrls; }
+    public String getText() { return text; }
 }

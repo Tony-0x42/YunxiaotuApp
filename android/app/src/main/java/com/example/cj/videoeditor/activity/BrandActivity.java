@@ -8,14 +8,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.adapter.BrandAdapter;
 import com.example.cj.videoeditor.bean.Brand;
-import com.example.cj.videoeditor.mock.MockData;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.ToastUtil;
 import java.util.List;
 
 public class BrandActivity extends BaseActivity {
 
     @Override
-    protected int getLayoutId() {
+    protected int getContentLayoutId() {
         return R.layout.activity_brand;
     }
 
@@ -25,7 +25,7 @@ public class BrandActivity extends BaseActivity {
         RecyclerView rvBrands = findViewById(R.id.rv_brands);
         TextView tvEmpty = findViewById(R.id.tv_empty);
         rvBrands.setLayoutManager(new GridLayoutManager(this, 2));
-        List<Brand> brands = MockData.getMockBrands();
+        List<Brand> brands = MockDataProvider.getMockBrands();
         if (brands.isEmpty()) {
             tvEmpty.setVisibility(View.VISIBLE);
             rvBrands.setVisibility(View.GONE);

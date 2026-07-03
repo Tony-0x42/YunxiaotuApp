@@ -7,7 +7,7 @@ import android.webkit.WebView;
 import android.widget.ProgressBar;
 
 import com.example.cj.videoeditor.R;
-import com.example.cj.videoeditor.mock.MockData;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 
 public class AgreementActivity extends BaseActivity {
 
@@ -15,7 +15,7 @@ public class AgreementActivity extends BaseActivity {
     private ProgressBar progressBar;
 
     @Override
-    protected int getLayoutId() {
+    protected int getContentLayoutId() {
         return R.layout.activity_agreement;
     }
 
@@ -36,7 +36,7 @@ public class AgreementActivity extends BaseActivity {
                 }
             }
         });
-        webView.loadDataWithBaseURL(null, wrapHtml(MockData.getUserAgreement()), "text/html", "utf-8", null);
+        webView.loadDataWithBaseURL(null, wrapHtml(MockDataProvider.getUserAgreement()), "text/html", "utf-8", null);
     }
 
     private String wrapHtml(String body) {

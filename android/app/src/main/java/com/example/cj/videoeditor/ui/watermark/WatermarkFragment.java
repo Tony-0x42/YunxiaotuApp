@@ -19,11 +19,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.cj.videoeditor.AppConfig;
 import com.example.cj.videoeditor.R;
-import com.example.cj.videoeditor.adapter.ImageAdapter;
-import com.example.cj.videoeditor.model.ParseResult;
-import com.example.cj.videoeditor.utils.MockData;
+import com.example.cj.videoeditor.adapter.SimpleImageAdapter;
+import com.example.cj.videoeditor.bean.ParseResult;
+import com.example.cj.videoeditor.utils.AppConfig;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.SharedPrefUtil;
 import com.example.cj.videoeditor.utils.ToastUtil;
 
@@ -87,7 +87,7 @@ public class WatermarkFragment extends Fragment {
         resultContainer.setVisibility(View.GONE);
         btnParse.setEnabled(false);
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            result = MockData.getParseResult();
+            result = MockDataProvider.getParseResult();
             progressBar.setVisibility(View.GONE);
             resultContainer.setVisibility(View.VISIBLE);
             btnParse.setEnabled(true);
@@ -98,7 +98,7 @@ public class WatermarkFragment extends Fragment {
     private void showResult() {
         if (result == null) return;
         recyclerImages.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        recyclerImages.setAdapter(new ImageAdapter(result.images));
+        recyclerImages.setAdapter(new SimpleImageAdapter(result.images));
         tvText.setText(result.text);
         switchTab(0);
     }

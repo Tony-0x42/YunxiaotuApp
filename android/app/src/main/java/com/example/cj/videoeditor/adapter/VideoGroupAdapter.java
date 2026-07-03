@@ -14,15 +14,23 @@ import java.util.List;
 public class VideoGroupAdapter extends RecyclerView.Adapter<VideoGroupAdapter.VH> {
 
     private final List<VideoGroup> data;
-    private final OnGroupActionListener listener;
+    private OnGroupActionListener listener;
 
     public interface OnGroupActionListener {
         void onGroupClick(VideoGroup group);
         void onGroupDelete(VideoGroup group);
     }
 
+    public VideoGroupAdapter(List<VideoGroup> data) {
+        this(data, null);
+    }
+
     public VideoGroupAdapter(List<VideoGroup> data, OnGroupActionListener listener) {
         this.data = data;
+        this.listener = listener;
+    }
+
+    public void setOnGroupActionListener(OnGroupActionListener listener) {
         this.listener = listener;
     }
 

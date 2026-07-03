@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.adapter.MaterialAdapter;
 import com.example.cj.videoeditor.bean.Material;
-import com.example.cj.videoeditor.mock.MockData;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class LearningActivity extends BaseActivity {
     private List<Material> allMaterials;
 
     @Override
-    protected int getLayoutId() {
+    protected int getContentLayoutId() {
         return R.layout.activity_learning;
     }
 
@@ -50,7 +50,7 @@ public class LearningActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-        allMaterials = MockData.getMockMaterials();
+        allMaterials = MockDataProvider.getMockMaterials();
         filterMaterials(0);
     }
 

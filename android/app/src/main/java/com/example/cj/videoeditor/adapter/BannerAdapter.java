@@ -20,6 +20,10 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.VH> {
         void onBannerClick(Banner banner);
     }
 
+    public BannerAdapter(List<Banner> data) {
+        this(data, null);
+    }
+
     public BannerAdapter(List<Banner> data, OnBannerClickListener listener) {
         this.data = data;
         this.listener = listener;

@@ -19,4 +19,12 @@ public class LearningMaterial {
         this.publishTime = publishTime;
         this.viewCount = viewCount;
     }
+
+    public String getId() { return id; }
+    public String getTitle() { return title; }
+    public String getType() { return type; }
+    public String getCoverUrl() { return coverUrl; }
+    public String getContentUrl() { return contentUrl; }
+    public String getPublishTime() { return publishTime; }
+    public int getViewCount() { return viewCount; }
 }

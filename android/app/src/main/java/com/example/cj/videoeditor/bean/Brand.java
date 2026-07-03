@@ -19,4 +19,11 @@ public class Brand {
         this.detail = detail;
         this.mediaUrls = mediaUrls;
     }
+
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getLogoUrl() { return logoUrl; }
+    public String getIntro() { return intro; }
+    public String getDetail() { return detail; }
+    public List<String> getMediaUrls() { return mediaUrls; }
 }

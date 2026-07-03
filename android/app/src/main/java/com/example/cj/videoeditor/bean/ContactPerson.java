@@ -10,4 +10,8 @@ public class ContactPerson {
         this.region = region;
         this.phone = phone;
     }
+
+    public String getName() { return name; }
+    public String getRegion() { return region; }
+    public String getPhone() { return phone; }
 }

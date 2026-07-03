@@ -10,11 +10,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.cj.videoeditor.AppConfig;
 import com.example.cj.videoeditor.MainActivity;
 import com.example.cj.videoeditor.R;
-import com.example.cj.videoeditor.model.User;
-import com.example.cj.videoeditor.utils.MockData;
+import com.example.cj.videoeditor.bean.User;
+import com.example.cj.videoeditor.utils.AppConfig;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.PhoneUtil;
 import com.example.cj.videoeditor.utils.SharedPrefUtil;
 import com.example.cj.videoeditor.utils.ToastUtil;
@@ -91,13 +91,13 @@ public class LoginActivity extends AppCompatActivity {
     private void simulateLogin(String phone) {
         btnLogin.setEnabled(false);
         btnLogin.postDelayed(() -> {
-            User user = MockData.getUser();
+            User user = MockDataProvider.getUser();
             SharedPrefUtil.putBoolean(this, AppConfig.SP_KEY_IS_LOGIN, true);
             SharedPrefUtil.putString(this, AppConfig.SP_KEY_USER_PHONE, phone);
-            SharedPrefUtil.putString(this, AppConfig.SP_KEY_USER_NAME, user.name);
-            SharedPrefUtil.putString(this, AppConfig.SP_KEY_USER_AVATAR, user.avatar);
-            SharedPrefUtil.putBoolean(this, AppConfig.SP_KEY_USER_VIP, user.vip);
-            SharedPrefUtil.putString(this, AppConfig.SP_KEY_USER_VIP_EXPIRE, user.vipExpire);
+            SharedPrefUtil.putString(this, AppConfig.SP_KEY_USER_NAME, user.getName());
+            SharedPrefUtil.putString(this, AppConfig.SP_KEY_USER_AVATAR, user.getAvatar());
+            SharedPrefUtil.putBoolean(this, AppConfig.SP_KEY_USER_VIP, user.isVip());
+            SharedPrefUtil.putString(this, AppConfig.SP_KEY_USER_VIP_EXPIRE, user.getVipExpire());
             SharedPrefUtil.putInt(this, AppConfig.SP_KEY_COMPUTE_TOTAL, 1000);
             SharedPrefUtil.putInt(this, AppConfig.SP_KEY_COMPUTE_USED, 356);
             startActivity(new Intent(this, MainActivity.class));

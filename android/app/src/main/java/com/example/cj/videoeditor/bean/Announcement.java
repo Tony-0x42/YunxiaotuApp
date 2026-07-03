@@ -10,4 +10,8 @@ public class Announcement {
         this.championName = championName;
         this.amount = amount;
     }
+
+    public String getTitle() { return title; }
+    public String getChampionName() { return championName; }
+    public String getAmount() { return amount; }
 }

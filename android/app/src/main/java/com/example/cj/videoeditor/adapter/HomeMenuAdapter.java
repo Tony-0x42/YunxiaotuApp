@@ -17,7 +17,7 @@ public class HomeMenuAdapter extends RecyclerView.Adapter<HomeMenuAdapter.VH> {
     private final OnMenuClickListener listener;
 
     public interface OnMenuClickListener {
-        void onMenuClick(HomeMenu menu);
+        void onMenuClick(HomeMenu menu, int position);
     }
 
     public HomeMenuAdapter(List<HomeMenu> data, OnMenuClickListener listener) {
@@ -38,7 +38,7 @@ public class HomeMenuAdapter extends RecyclerView.Adapter<HomeMenuAdapter.VH> {
         holder.ivIcon.setImageResource(item.getIconRes());
         holder.tvName.setText(item.getName());
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onMenuClick(item);
+            if (listener != null) listener.onMenuClick(item, holder.getAdapterPosition());
         });
     }
 

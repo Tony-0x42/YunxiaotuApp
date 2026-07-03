@@ -14,9 +14,9 @@ import android.widget.TextView;
 
 import com.example.cj.videoeditor.MainActivity;
 import com.example.cj.videoeditor.R;
-import com.example.cj.videoeditor.mock.MockData;
-import com.example.cj.videoeditor.mock.UserSession;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.ToastUtil;
+import com.example.cj.videoeditor.utils.UserSession;
 import com.google.android.material.button.MaterialButton;
 
 public class RegisterActivity extends BaseActivity {
@@ -38,7 +38,7 @@ public class RegisterActivity extends BaseActivity {
     private boolean confirmPwdVisible = false;
 
     @Override
-    protected int getLayoutId() {
+    protected int getContentLayoutId() {
         return R.layout.activity_register;
     }
 
@@ -140,7 +140,7 @@ public class RegisterActivity extends BaseActivity {
         btnRegister.setEnabled(false);
         btnRegister.setText(R.string.loading);
         btnRegister.postDelayed(() -> {
-            UserSession.saveLogin(this, MockData.getMockUser());
+            UserSession.saveLogin(this, MockDataProvider.getMockUser());
             ToastUtil.show(this, "注册成功");
             startActivity(new Intent(this, MainActivity.class));
             finish();

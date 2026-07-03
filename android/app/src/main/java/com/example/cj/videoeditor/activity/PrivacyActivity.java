@@ -7,7 +7,7 @@ import android.webkit.WebView;
 import android.widget.ProgressBar;
 
 import com.example.cj.videoeditor.R;
-import com.example.cj.videoeditor.mock.MockData;
+import com.example.cj.videoeditor.utils.MockDataProvider;
 
 public class PrivacyActivity extends BaseActivity {
 
@@ -15,7 +15,7 @@ public class PrivacyActivity extends BaseActivity {
     private ProgressBar progressBar;
 
     @Override
-    protected int getLayoutId() {
+    protected int getContentLayoutId() {
         return R.layout.activity_privacy;
     }
 
@@ -36,7 +36,7 @@ public class PrivacyActivity extends BaseActivity {
                 }
             }
         });
-        webView.loadDataWithBaseURL(null, wrapHtml(MockData.getPrivacyPolicy()), "text/html", "utf-8", null);
+        webView.loadDataWithBaseURL(null, wrapHtml(MockDataProvider.getPrivacyPolicy()), "text/html", "utf-8", null);
     }
 
     private String wrapHtml(String body) {

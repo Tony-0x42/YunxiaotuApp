@@ -19,4 +19,12 @@ public class UserInfo {
         this.totalCompute = totalCompute;
         this.usedCompute = usedCompute;
     }
+
+    public String getPhone() { return phone; }
+    public String getNickname() { return nickname; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public boolean isVip() { return vip; }
+    public String getVipExpire() { return vipExpire; }
+    public int getTotalCompute() { return totalCompute; }
+    public int getUsedCompute() { return usedCompute; }
 }
