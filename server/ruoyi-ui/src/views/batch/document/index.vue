@@ -151,71 +151,6 @@
       @pagination="getList"
     />
 
-    <!-- 新增/编辑文档弹窗 -->
-    <el-dialog :title="title" :visible.sync="open" width="850px" append-to-body :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="90px">
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="文档标题" prop="documentTitle">
-              <el-input v-model="form.documentTitle" placeholder="请输入文档标题" maxlength="200" show-word-limit />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="文档类型" prop="documentType">
-              <el-select v-model="form.documentType" placeholder="请选择文档类型" style="width: 100%">
-                <el-option
-                  v-for="item in documentTypeOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="适用页面" prop="applyPagesArray">
-              <el-select v-model="form.applyPagesArray" multiple collapse-tags placeholder="请选择适用页面" style="width: 100%">
-                <el-option
-                  v-for="item in applyPageOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="排序权重" prop="sortWeight">
-              <el-input-number v-model="form.sortWeight" :min="0" :max="9999" controls-position="right" style="width: 100%" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="状态" prop="status">
-              <el-radio-group v-model="form.status">
-                <el-radio label="0">启用</el-radio>
-                <el-radio label="1">禁用</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="文档内容" prop="content">
-              <editor v-model="form.content" :min-height="320" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-    </el-dialog>
-
     <!-- 预览弹窗 -->
     <el-dialog title="文档预览" :visible.sync="previewOpen" width="700px" append-to-body>
       <div class="document-preview">
@@ -234,7 +169,7 @@
 </template>
 
 <script>
-import { listDocument, getDocument, delDocument, addDocument, updateDocument, changeDocumentStatus } from "@/api/batch/document"
+import { listDocument, delDocument, changeDocumentStatus } from "@/api/batch/document"
 
 export default {
   name: "BatchDocument",
@@ -254,10 +189,6 @@ export default {
       total: 0,
       // 文档表格数据
       documentList: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
       // 是否显示预览弹窗
       previewOpen: false,
       // 预览数据
@@ -286,23 +217,6 @@ export default {
         documentType: undefined,
         applyPages: undefined,
         status: undefined
-      },
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {
-        documentTitle: [
-          { required: true, message: "文档标题不能为空", trigger: "blur" }
-        ],
-        documentType: [
-          { required: true, message: "文档类型不能为空", trigger: "change" }
-        ],
-        applyPagesArray: [
-          { type: "array", required: true, message: "适用页面不能为空", trigger: "change" }
-        ],
-        content: [
-          { required: true, message: "文档内容不能为空", trigger: "blur" }
-        ]
       }
     }
   },
@@ -325,24 +239,6 @@ export default {
         this.loading = false
       })
     },
-    // 取消按钮
-    cancel() {
-      this.open = false
-      this.reset()
-    },
-    // 表单重置
-    reset() {
-      this.form = {
-        documentId: undefined,
-        documentTitle: undefined,
-        documentType: undefined,
-        applyPagesArray: [],
-        content: undefined,
-        sortWeight: 0,
-        status: "0"
-      }
-      this.resetForm("form")
-    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1
@@ -361,47 +257,12 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.reset()
-      this.open = true
-      this.title = "新增文档"
+      this.$tab.openPage("新增文档", "/batch/document/add")
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset()
-      const documentId = row.documentId || this.ids
-      getDocument(documentId).then(response => {
-        this.form = response.data
-        this.form.status = String(this.form.status)
-        this.form.documentType = String(this.form.documentType)
-        this.form.applyPagesArray = this.form.applyPages ? this.form.applyPages.split(",") : []
-        this.open = true
-        this.title = "修改文档"
-      })
-    },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          if (!this.form.applyPagesArray || this.form.applyPagesArray.length === 0) {
-            this.$modal.msgError("请选择适用页面")
-            return
-          }
-          this.form.applyPages = this.form.applyPagesArray.join(",")
-          if (this.form.documentId != undefined) {
-            updateDocument(this.form).then(() => {
-              this.$modal.msgSuccess("修改成功")
-              this.open = false
-              this.getList()
-            })
-          } else {
-            addDocument(this.form).then(() => {
-              this.$modal.msgSuccess("新增成功")
-              this.open = false
-              this.getList()
-            })
-          }
-        }
-      })
+      const documentId = row.documentId || this.ids[0]
+      this.$tab.openPage("修改文档", "/batch/document/edit/" + documentId)
     },
     /** 状态切换 */
     handleStatusChange(row) {

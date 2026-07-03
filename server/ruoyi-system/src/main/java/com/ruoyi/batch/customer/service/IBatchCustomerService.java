@@ -1,7 +1,9 @@
 package com.ruoyi.batch.customer.service;
 
+import java.io.InputStream;
 import java.util.List;
 import com.ruoyi.batch.customer.domain.BatchCustomer;
+import com.ruoyi.batch.customer.domain.BatchCustomerImportResult;
 
 /**
  * 客户/APP账号Service接口
@@ -120,4 +122,12 @@ public interface IBatchCustomerService
      * @return 影响行数
      */
     public int updateStatus(BatchCustomer batchCustomer);
+
+    /**
+     * 批量导入客户
+     *
+     * @param inputStream Excel文件流
+     * @return 导入结果
+     */
+    public BatchCustomerImportResult importCustomer(InputStream inputStream);
 }

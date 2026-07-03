@@ -26,7 +26,7 @@ public class BatchCustomer extends BaseEntity
 
     /** 账号类型：1 分公司 / 2 服务商 / 3 个人 */
     @NotNull(message = "账号类型不能为空")
-    @Excel(name = "账号类型", readConverterExp = "1=分公司,2=服务商,3=个人")
+    @Excel(name = "账号类型", readConverterExp = "1=分公司,2=服务商,3=个人", combo = {"分公司", "服务商", "个人"})
     private Integer customerType;
 
     /** 账号名称 */
@@ -52,16 +52,19 @@ public class BatchCustomer extends BaseEntity
     private String parentPhone;
 
     /** 所属分公司手机号 */
-    @Excel(name = "所属分公司手机号")
+    @Excel(name = "所属分公司手机号", type = com.ruoyi.common.annotation.Excel.Type.EXPORT)
     private String branchPhone;
 
     /** 分公司最大可创建服务商数量 */
+    @Excel(name = "最大服务商数量")
     private Integer maxServiceProvider;
 
     /** 分公司旗下服务商总可分配个人账号容量 */
+    @Excel(name = "个人账号总容量")
     private Integer totalIndividualCapacity;
 
     /** 服务商可拆分创建个人账号上限 */
+    @Excel(name = "个人账号上限")
     private Integer maxIndividual;
 
     /** 算力总配额 GF */
@@ -70,11 +73,11 @@ public class BatchCustomer extends BaseEntity
     private BigDecimal computingPowerTotal;
 
     /** 已消耗算力 GF */
-    @Excel(name = "已消耗算力")
+    @Excel(name = "已消耗算力", type = com.ruoyi.common.annotation.Excel.Type.EXPORT)
     private BigDecimal computingPowerUsed;
 
     /** 剩余算力 GF */
-    @Excel(name = "剩余算力")
+    @Excel(name = "剩余算力", type = com.ruoyi.common.annotation.Excel.Type.EXPORT)
     private BigDecimal computingPowerRemain;
 
     /** VIP 有效期 */
@@ -90,7 +93,7 @@ public class BatchCustomer extends BaseEntity
     private String qrCodeKey;
 
     /** 状态：0 启用 / 1 禁用 */
-    @Excel(name = "状态", readConverterExp = "0=启用,1=禁用")
+    @Excel(name = "状态", readConverterExp = "0=启用,1=禁用", combo = {"启用", "禁用"})
     private Integer status;
 
     /** 删除标志：0 存在 / 2 删除 */

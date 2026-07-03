@@ -1,102 +1,99 @@
 <template>
-  <el-dialog :title="title" :visible.sync="open" width="680px" append-to-body :close-on-click-modal="false">
-    <el-form ref="form" :model="form" :rules="rules" label-width="150px">
-      <el-row>
-        <el-col :span="24">
-          <el-form-item label="账号类型" prop="customerType">
-            <el-select v-model="form.customerType" placeholder="请选择账号类型" style="width: 100%" :disabled="isEdit">
-              <el-option label="分公司" :value="1" />
-              <el-option label="服务商" :value="2" />
-              <el-option label="个人" :value="3" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="账号名称" prop="customerName">
-            <el-input v-model="form.customerName" placeholder="请输入账号名称" maxlength="100" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="联系人" prop="contactName">
-            <el-input v-model="form.contactName" placeholder="请输入联系人" maxlength="50" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="手机号" prop="phone">
-            <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="11" :disabled="isEdit" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12" v-if="form.customerType !== 1">
-          <el-form-item label="上级手机号" prop="parentPhone">
-            <el-input v-model="form.parentPhone" placeholder="请输入上级手机号" maxlength="11" :disabled="isEdit" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row v-if="form.customerType === 1">
-        <el-col :span="12">
-          <el-form-item label="最大服务商数量" prop="maxServiceProvider">
-            <el-input-number v-model="form.maxServiceProvider" :min="0" :precision="0" :step="1" controls-position="right" style="width: 100%" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="个人账号总容量" prop="totalIndividualCapacity">
-            <el-input-number v-model="form.totalIndividualCapacity" :min="0" :precision="0" :step="1" controls-position="right" style="width: 100%" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row v-if="form.customerType === 2">
-        <el-col :span="12">
-          <el-form-item label="个人账号上限" prop="maxIndividual">
-            <el-input-number v-model="form.maxIndividual" :min="0" :precision="0" :step="1" controls-position="right" style="width: 100%" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="算力总配额(GF)" prop="computingPowerTotal">
-            <el-input-number v-model="form.computingPowerTotal" :min="0" :precision="2" :step="1" controls-position="right" style="width: 100%" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="VIP有效期" prop="vipExpireDate">
-            <el-date-picker v-model="form.vipExpireDate" type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="24">
-          <el-form-item label="备注">
-            <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" maxlength="500" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-    </el-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">保 存</el-button>
-      <el-button @click="cancel">取 消</el-button>
-    </div>
-  </el-dialog>
+  <div class="app-container">
+    <el-card class="box-card" shadow="never">
+      <div slot="header" class="clearfix">
+        <span>{{ title }}</span>
+      </div>
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="账号类型" prop="customerType">
+              <el-select v-model="form.customerType" placeholder="请选择账号类型" style="width: 100%" :disabled="isEdit">
+                <el-option label="分公司" :value="1" />
+                <el-option label="服务商" :value="2" />
+                <el-option label="个人" :value="3" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="账号名称" prop="customerName">
+              <el-input v-model="form.customerName" placeholder="请输入账号名称" maxlength="100" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="联系人" prop="contactName">
+              <el-input v-model="form.contactName" placeholder="请输入联系人" maxlength="50" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="手机号" prop="phone">
+              <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="11" :disabled="isEdit" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12" v-if="form.customerType !== 1">
+            <el-form-item label="上级手机号" prop="parentPhone">
+              <el-input v-model="form.parentPhone" placeholder="请输入上级手机号" maxlength="11" :disabled="isEdit" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="form.customerType === 1">
+          <el-col :span="12">
+            <el-form-item label="最大服务商数量" prop="maxServiceProvider">
+              <el-input-number v-model="form.maxServiceProvider" :min="0" :precision="0" :step="1" controls-position="right" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="个人账号总容量" prop="totalIndividualCapacity">
+              <el-input-number v-model="form.totalIndividualCapacity" :min="0" :precision="0" :step="1" controls-position="right" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="form.customerType === 2">
+          <el-col :span="12">
+            <el-form-item label="个人账号上限" prop="maxIndividual">
+              <el-input-number v-model="form.maxIndividual" :min="0" :precision="0" :step="1" controls-position="right" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="算力总配额(GF)" prop="computingPowerTotal">
+              <el-input-number v-model="form.computingPowerTotal" :min="0" :precision="2" :step="1" controls-position="right" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="VIP有效期" prop="vipExpireDate">
+              <el-date-picker v-model="form.vipExpireDate" type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="备注">
+              <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" maxlength="500" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item>
+          <el-button type="primary" @click="submitForm">保 存</el-button>
+          <el-button @click="cancel">取 消</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+  </div>
 </template>
 
 <script>
 import { addCustomer, updateCustomer, getCustomer } from "@/api/batch/customer"
 
 export default {
-  name: "CustomerFormDialog",
-  props: {
-    title: {
-      type: String,
-      default: "新增账号"
-    }
-  },
+  name: "BatchCustomerForm",
   data() {
     return {
-      open: false,
-      isEdit: false,
       form: {
         customerId: undefined,
         customerType: 1,
@@ -139,6 +136,12 @@ export default {
     }
   },
   computed: {
+    isEdit() {
+      return !!this.$route.params.customerId
+    },
+    title() {
+      return this.isEdit ? "编辑账号" : "新增账号"
+    },
     rules() {
       const rules = { ...this.baseRules }
       if (this.form.customerType !== 1) {
@@ -166,6 +169,10 @@ export default {
   watch: {
     'form.customerType'(val) {
       if (!this.isEdit) {
+        // 切换账号类型时重置字段值并清除之前的校验状态，避免隐藏字段残留错误提示
+        this.$nextTick(() => {
+          this.$refs.form && this.$refs.form.clearValidate()
+        })
         if (val === 1) {
           this.form.parentPhone = undefined
         } else if (val === 2) {
@@ -181,19 +188,16 @@ export default {
       }
     }
   },
+  created() {
+    this.reset()
+    const customerId = this.$route.params.customerId
+    if (customerId) {
+      getCustomer(customerId).then(response => {
+        this.form = response.data
+      })
+    }
+  },
   methods: {
-    open(customerId) {
-      this.reset()
-      this.open = true
-      if (customerId) {
-        this.isEdit = true
-        getCustomer(customerId).then(response => {
-          this.form = response.data
-        })
-      } else {
-        this.isEdit = false
-      }
-    },
     reset() {
       this.form = {
         customerId: undefined,
@@ -214,8 +218,7 @@ export default {
       this.resetForm("form")
     },
     cancel() {
-      this.open = false
-      this.reset()
+      this.$tab.closeOpenPage({ path: '/batch/customer' })
     },
     submitForm() {
       this.$refs["form"].validate(valid => {
@@ -223,14 +226,11 @@ export default {
           if (this.isEdit) {
             updateCustomer(this.form).then(() => {
               this.$modal.msgSuccess("修改成功")
-              this.open = false
-              this.$emit("success")
+              this.$tab.closeOpenPage({ path: '/batch/customer' })
             })
           } else {
             addCustomer(this.form).then(response => {
               this.$modal.msgSuccess("新增成功")
-              this.open = false
-              this.$emit("success")
               const qrCodeUrl = response.qrCodeUrl || ''
               const customerId = response.customerId
               if (qrCodeUrl && customerId) {
@@ -239,8 +239,12 @@ export default {
                   cancelButtonText: "返回列表",
                   type: "success"
                 }).then(() => {
-                  this.$router.push("/batch/customer/qrcode/" + customerId)
-                }).catch(() => {})
+                  this.$tab.closeOpenPage({ path: '/batch/customer/qrcode/' + customerId })
+                }).catch(() => {
+                  this.$tab.closeOpenPage({ path: '/batch/customer' })
+                })
+              } else {
+                this.$tab.closeOpenPage({ path: '/batch/customer' })
               }
             })
           }

@@ -169,93 +169,6 @@
       @pagination="getList"
     />
 
-    <!-- 新增/编辑教程弹窗 -->
-    <el-dialog :title="title" :visible.sync="open" width="850px" append-to-body :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="90px">
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="教程标题" prop="tutorialTitle">
-              <el-input v-model="form.tutorialTitle" placeholder="请输入教程标题" maxlength="200" show-word-limit />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="教程类型" prop="tutorialType">
-              <el-select v-model="form.tutorialType" placeholder="请选择教程类型" style="width: 100%">
-                <el-option label="视频" value="1" />
-                <el-option label="图文" value="2" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="所属分类" prop="categoryId">
-              <el-select v-model="form.categoryId" placeholder="请选择分类" clearable style="width: 100%">
-                <el-option
-                  v-for="item in categoryOptions"
-                  :key="item.categoryId"
-                  :label="item.categoryName"
-                  :value="item.categoryId"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="排序权重" prop="sortWeight">
-              <el-input-number v-model="form.sortWeight" :min="0" :max="9999" controls-position="right" style="width: 100%" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="封面图" prop="coverUrl">
-              <image-upload v-model="form.coverUrl" :limit="1" :file-size="5" :file-type="['png', 'jpg', 'jpeg']" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row v-if="form.tutorialType == '1'">
-          <el-col :span="24">
-            <el-form-item label="视频文件" prop="videoUrl">
-              <file-upload
-                v-model="form.videoUrl"
-                :limit="1"
-                :file-size="200"
-                :file-type="['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv']"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row v-if="form.tutorialType == '2'">
-          <el-col :span="24">
-            <el-form-item label="图文内容" prop="documentContent">
-              <editor v-model="form.documentContent" :min-height="320" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="简介" prop="intro">
-              <el-input v-model="form.intro" type="textarea" :rows="3" placeholder="请输入教程简介" maxlength="500" show-word-limit />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="状态" prop="status">
-              <el-radio-group v-model="form.status">
-                <el-radio label="0">上架</el-radio>
-                <el-radio label="1">下架</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-    </el-dialog>
-
     <!-- 查看弹窗 -->
     <el-dialog title="教程详情" :visible.sync="previewOpen" width="700px" append-to-body>
       <div class="tutorial-preview">
@@ -329,35 +242,14 @@
       </div>
     </el-drawer>
 
-    <!-- 新增/编辑分类弹窗 -->
-    <el-dialog :title="categoryTitle" :visible.sync="categoryOpen" width="500px" append-to-body :close-on-click-modal="false">
-      <el-form ref="categoryForm" :model="categoryForm" :rules="categoryRules" label-width="90px">
-        <el-form-item label="分类名称" prop="categoryName">
-          <el-input v-model="categoryForm.categoryName" placeholder="请输入分类名称" maxlength="100" show-word-limit />
-        </el-form-item>
-        <el-form-item label="排序权重" prop="sortWeight">
-          <el-input-number v-model="categoryForm.sortWeight" :min="0" :max="9999" controls-position="right" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="categoryForm.status">
-            <el-radio label="0">启用</el-radio>
-            <el-radio label="1">停用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitCategoryForm">确 定</el-button>
-        <el-button @click="cancelCategory">取 消</el-button>
-      </div>
-    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import {
-  listTutorial, getTutorial, delTutorial, addTutorial, updateTutorial,
-  changeTutorialStatus, listCategory, listCategoryAll, addCategory,
-  updateCategory, delCategory
+  listTutorial, delTutorial, changeTutorialStatus, listCategory, listCategoryAll,
+  delCategory
 } from "@/api/batch/tutorial"
 
 export default {
@@ -380,10 +272,6 @@ export default {
       tutorialList: [],
       // 分类选项
       categoryOptions: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
       // 是否显示查看弹窗
       previewOpen: false,
       // 预览数据
@@ -397,47 +285,10 @@ export default {
         categoryId: undefined,
         status: undefined
       },
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {
-        tutorialTitle: [
-          { required: true, message: "教程标题不能为空", trigger: "blur" }
-        ],
-        tutorialType: [
-          { required: true, message: "教程类型不能为空", trigger: "change" }
-        ],
-        categoryId: [
-          { required: true, message: "请选择所属分类", trigger: "change" }
-        ],
-        status: [
-          { required: true, message: "状态不能为空", trigger: "change" }
-        ]
-      },
       // 分类抽屉
       categoryDrawer: false,
       categoryLoading: false,
-      categoryList: [],
-      categoryTitle: "",
-      categoryOpen: false,
-      categoryForm: {},
-      categoryRules: {
-        categoryName: [
-          { required: true, message: "分类名称不能为空", trigger: "blur" }
-        ],
-        status: [
-          { required: true, message: "状态不能为空", trigger: "change" }
-        ]
-      }
-    }
-  },
-  watch: {
-    "form.tutorialType"(val) {
-      if (val == '1') {
-        this.form.documentContent = undefined
-      } else if (val == '2') {
-        this.form.videoUrl = undefined
-      }
+      categoryList: []
     }
   },
   created() {
@@ -468,28 +319,6 @@ export default {
         this.categoryLoading = false
       })
     },
-    // 取消按钮
-    cancel() {
-      this.open = false
-      this.reset()
-    },
-    // 表单重置
-    reset() {
-      this.form = {
-        tutorialId: undefined,
-        tutorialTitle: undefined,
-        tutorialType: "1",
-        categoryId: undefined,
-        coverUrl: undefined,
-        videoUrl: undefined,
-        documentContent: undefined,
-        intro: undefined,
-        sortWeight: 0,
-        viewCount: 0,
-        status: "0"
-      }
-      this.resetForm("form")
-    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1
@@ -508,49 +337,12 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.reset()
-      this.open = true
-      this.title = "新增教程"
+      this.$tab.openPage('新增教程', '/batch/tutorial/add')
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset()
       const tutorialId = row.tutorialId || this.ids
-      getTutorial(tutorialId).then(response => {
-        this.form = response.data
-        this.form.tutorialType = String(this.form.tutorialType)
-        this.form.status = String(this.form.status)
-        this.open = true
-        this.title = "修改教程"
-      })
-    },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          if (this.form.tutorialType == '1' && !this.form.videoUrl) {
-            this.$modal.msgError("请上传视频文件")
-            return
-          }
-          if (this.form.tutorialType == '2' && !this.form.documentContent) {
-            this.$modal.msgError("请输入图文内容")
-            return
-          }
-          if (this.form.tutorialId != undefined) {
-            updateTutorial(this.form).then(() => {
-              this.$modal.msgSuccess("修改成功")
-              this.open = false
-              this.getList()
-            })
-          } else {
-            addTutorial(this.form).then(() => {
-              this.$modal.msgSuccess("新增成功")
-              this.open = false
-              this.getList()
-            })
-          }
-        }
-      })
+      this.$tab.openPage('修改教程', '/batch/tutorial/edit/' + tutorialId)
     },
     /** 状态切换 */
     handleStatusChange(row) {
@@ -592,52 +384,11 @@ export default {
     },
     /** 新增分类 */
     handleAddCategory() {
-      this.categoryForm = {
-        categoryId: undefined,
-        categoryName: undefined,
-        sortWeight: 0,
-        status: "0"
-      }
-      this.categoryOpen = true
-      this.categoryTitle = "新增分类"
+      this.$tab.openPage('新增分类', '/batch/tutorial/category/add')
     },
     /** 修改分类 */
     handleUpdateCategory(row) {
-      this.categoryForm = {
-        categoryId: row.categoryId,
-        categoryName: row.categoryName,
-        sortWeight: row.sortWeight,
-        status: String(row.status)
-      }
-      this.categoryOpen = true
-      this.categoryTitle = "修改分类"
-    },
-    /** 提交分类 */
-    submitCategoryForm() {
-      this.$refs["categoryForm"].validate(valid => {
-        if (valid) {
-          if (this.categoryForm.categoryId != undefined) {
-            updateCategory(this.categoryForm).then(() => {
-              this.$modal.msgSuccess("修改成功")
-              this.categoryOpen = false
-              this.getCategoryList()
-              this.getCategoryOptions()
-            })
-          } else {
-            addCategory(this.categoryForm).then(() => {
-              this.$modal.msgSuccess("新增成功")
-              this.categoryOpen = false
-              this.getCategoryList()
-              this.getCategoryOptions()
-            })
-          }
-        }
-      })
-    },
-    /** 取消分类弹窗 */
-    cancelCategory() {
-      this.categoryOpen = false
-      this.resetForm("categoryForm")
+      this.$tab.openPage('修改分类', '/batch/tutorial/category/edit/' + row.categoryId)
     },
     /** 删除分类 */
     handleDeleteCategory(row) {

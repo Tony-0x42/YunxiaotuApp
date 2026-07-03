@@ -100,3 +100,24 @@ export function exportCustomer(query) {
     responseType: 'blob'
   })
 }
+
+// 下载导入模板
+export function importTemplate() {
+  return request({
+    url: '/batch/customer/importTemplate',
+    method: 'get',
+    responseType: 'blob'
+  })
+}
+
+// 导入客户
+export function importData(data) {
+  return request({
+    url: '/batch/customer/importData',
+    method: 'post',
+    data: data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}

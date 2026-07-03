@@ -1,5 +1,6 @@
 package com.ruoyi.batch.customer.service.impl;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.utils.uuid.IdUtils;
 import com.ruoyi.batch.customer.domain.BatchCustomer;
+import com.ruoyi.batch.customer.domain.BatchCustomerImportFail;
+import com.ruoyi.batch.customer.domain.BatchCustomerImportResult;
 import com.ruoyi.batch.customer.mapper.BatchCustomerMapper;
 import com.ruoyi.batch.customer.service.IBatchCustomerService;
 import com.ruoyi.batch.customer.utils.QrCodeUtil;
@@ -461,5 +465,100 @@ public class BatchCustomerServiceImpl implements IBatchCustomerService
         query.setCustomerType(TYPE_INDIVIDUAL);
         List<BatchCustomer> list = selectBatchCustomerList(query);
         return list.size();
+    }
+
+    @Override
+    public BatchCustomerImportResult importCustomer(InputStream inputStream)
+    {
+        ExcelUtil<BatchCustomer> util = new ExcelUtil<BatchCustomer>(BatchCustomer.class);
+        List<BatchCustomer> list = util.importExcel(inputStream);
+        BatchCustomerImportResult result = new BatchCustomerImportResult();
+
+        for (int i = 0; i < list.size(); i++)
+        {
+            BatchCustomer customer = list.get(i);
+            int rowNum = i + 2; // 第1行为表头
+
+            try
+            {
+                // 前置基础校验：必填项缺失直接进失败列表，不入库
+                validateImportCustomer(customer, rowNum);
+
+                // 默认值
+                if (customer.getStatus() == null)
+                {
+                    customer.setStatus(STATUS_ENABLE);
+                }
+
+                insertBatchCustomer(customer);
+                result.addSuccess();
+            }
+            catch (Exception e)
+            {
+                BatchCustomerImportFail fail = new BatchCustomerImportFail();
+                fail.setRowNum(rowNum);
+                fail.setCustomerName(customer.getCustomerName());
+                fail.setPhone(customer.getPhone());
+                fail.setReason(e.getMessage());
+                result.addFail(fail);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 导入前置校验
+     */
+    private void validateImportCustomer(BatchCustomer customer, int rowNum)
+    {
+        if (customer.getCustomerType() == null)
+        {
+            throw new ServiceException("第" + rowNum + "行：账号类型不能为空");
+        }
+        if (StringUtils.isEmpty(customer.getCustomerName()))
+        {
+            throw new ServiceException("第" + rowNum + "行：账号名称不能为空");
+        }
+        if (StringUtils.isEmpty(customer.getContactName()))
+        {
+            throw new ServiceException("第" + rowNum + "行：联系人不能为空");
+        }
+        if (StringUtils.isEmpty(customer.getPhone()))
+        {
+            throw new ServiceException("第" + rowNum + "行：手机号不能为空");
+        }
+        if (customer.getComputingPowerTotal() == null)
+        {
+            throw new ServiceException("第" + rowNum + "行：算力总配额不能为空");
+        }
+        if (customer.getVipExpireDate() == null)
+        {
+            throw new ServiceException("第" + rowNum + "行：VIP有效期不能为空");
+        }
+
+        int type = customer.getCustomerType();
+        if (TYPE_BRANCH == type)
+        {
+            if (customer.getMaxServiceProvider() == null)
+            {
+                throw new ServiceException("第" + rowNum + "行：最大服务商数量不能为空");
+            }
+            if (customer.getTotalIndividualCapacity() == null)
+            {
+                throw new ServiceException("第" + rowNum + "行：个人账号总容量不能为空");
+            }
+        }
+        else
+        {
+            if (StringUtils.isEmpty(customer.getParentPhone()))
+            {
+                throw new ServiceException("第" + rowNum + "行：上级手机号不能为空");
+            }
+            if (TYPE_SERVICE_PROVIDER == type && customer.getMaxIndividual() == null)
+            {
+                throw new ServiceException("第" + rowNum + "行：个人账号上限不能为空");
+            }
+        }
     }
 }

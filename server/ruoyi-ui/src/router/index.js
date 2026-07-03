@@ -185,6 +185,130 @@ export const dynamicRoutes = [
         component: () => import('@/views/batch/customer/qrcode'),
         name: 'BatchCustomerQrCode',
         meta: { title: '注册二维码', activeMenu: '/batch/customer' }
+      },
+      {
+        path: 'add',
+        component: () => import('@/views/batch/customer/form'),
+        name: 'BatchCustomerAdd',
+        meta: { title: '新增账号', activeMenu: '/batch/customer' }
+      },
+      {
+        path: 'edit/:customerId(\\d+)',
+        component: () => import('@/views/batch/customer/form'),
+        name: 'BatchCustomerEdit',
+        meta: { title: '编辑账号', activeMenu: '/batch/customer' }
+      }
+    ]
+  },
+  {
+    path: '/batch/notice',
+    component: Layout,
+    hidden: true,
+    permissions: ['batch:notice:list'],
+    children: [
+      {
+        path: 'add',
+        component: () => import('@/views/batch/notice/form'),
+        name: 'BatchNoticeAdd',
+        meta: { title: '新增公告', activeMenu: '/batch/notice' }
+      },
+      {
+        path: 'edit/:noticeId(\\d+)',
+        component: () => import('@/views/batch/notice/form'),
+        name: 'BatchNoticeEdit',
+        meta: { title: '编辑公告', activeMenu: '/batch/notice' }
+      }
+    ]
+  },
+  {
+    path: '/batch/home',
+    component: Layout,
+    hidden: true,
+    permissions: ['batch:home:list'],
+    children: [
+      {
+        path: 'add/:type?',
+        component: () => import('@/views/batch/home/form'),
+        name: 'BatchHomeAdd',
+        meta: { title: '新增首页配置', activeMenu: '/batch/home' }
+      },
+      {
+        path: 'edit/:type/:id(\\d+)',
+        component: () => import('@/views/batch/home/form'),
+        name: 'BatchHomeEdit',
+        meta: { title: '修改首页配置', activeMenu: '/batch/home' }
+      }
+    ]
+  },
+  {
+    path: '/batch/config',
+    component: Layout,
+    hidden: true,
+    permissions: ['batch:config:list'],
+    children: [
+      {
+        path: 'add',
+        component: () => import('@/views/batch/config/form'),
+        name: 'BatchConfigVersionAdd',
+        meta: { title: '新增版本', activeMenu: '/batch/config' }
+      },
+      {
+        path: 'edit/:versionId(\\d+)',
+        component: () => import('@/views/batch/config/form'),
+        name: 'BatchConfigVersionEdit',
+        meta: { title: '修改版本', activeMenu: '/batch/config' }
+      }
+    ]
+  },
+  {
+    path: '/batch/tutorial',
+    component: Layout,
+    hidden: true,
+    permissions: ['batch:tutorial:list'],
+    children: [
+      {
+        path: 'add',
+        component: () => import('@/views/batch/tutorial/form'),
+        name: 'BatchTutorialAdd',
+        meta: { title: '新增教程', activeMenu: '/batch/tutorial' }
+      },
+      {
+        path: 'edit/:tutorialId(\\d+)',
+        component: () => import('@/views/batch/tutorial/form'),
+        name: 'BatchTutorialEdit',
+        meta: { title: '修改教程', activeMenu: '/batch/tutorial' }
+      },
+      {
+        path: 'category/add',
+        component: () => import('@/views/batch/tutorial/categoryForm'),
+        name: 'BatchTutorialCategoryAdd',
+        meta: { title: '新增分类', activeMenu: '/batch/tutorial' }
+      },
+      {
+        path: 'category/edit/:categoryId(\\d+)',
+        component: () => import('@/views/batch/tutorial/categoryForm'),
+        name: 'BatchTutorialCategoryEdit',
+        meta: { title: '修改分类', activeMenu: '/batch/tutorial' }
+      }
+    ]
+  },
+  {
+    path: '/batch/document',
+    component: Layout,
+    hidden: true,
+    permissions: ['batch:document:list'],
+    children: [
+      {
+        path: 'add',
+        component: () => import('@/views/batch/document/form'),
+        name: 'BatchDocumentAdd',
+        meta: { title: '新增文档', activeMenu: '/batch/document' }
+      },
+      {
+        path: 'edit/:documentId(\\d+)',
+        component: () => import('@/views/batch/document/form'),
+        name: 'BatchDocumentEdit',
+        meta: { title: '修改文档', activeMenu: '/batch/document' }
       }
     ]
   }

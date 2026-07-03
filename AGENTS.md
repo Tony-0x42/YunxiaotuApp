@@ -122,6 +122,29 @@ spec/
 - **最小改动**：做最小必要修改，避免在单 PR/任务中同时改动无关模块。
 - **MyBatis XML SQL 条件转义**：SQL 语句中的大于号 `>`、小于号 `<`、大于等于 `>=`、小于等于 `<=` 必须分别写成 `&gt;`、`&lt;`、`&gt;=`、`&lt;=`，避免 XML 解析异常；`<if test="...">` 的 test 属性表达式按常规 OGNL 书写，无需额外转义。
 
-## 8. 遗留待迭代说明
+## 8. 开发环境工具路径
+
+本机主要开发工具均安装在 `D:\tools\` 下，Agent 执行构建/运行命令时可参考以下路径（所有路径均为 Windows 风格，命令行中按需转换为 `/d/tools/...`）：
+
+| 工具 | 路径 | 说明 |
+|---|---|---|
+| JDK 17 | `D:\tools\jdk17` | 项目默认 JDK，Maven 包装脚本已自动设置 `JAVA_HOME` 指向此处 |
+| JDK 8 | `D:\tools\jdk1_8` | 兼容备用 |
+| Maven | `D:\tools\apache-maven-3.9.6` | 通过 `D:\tools\bin\mvn.cmd` 调用，已自动切换为 JDK 17 |
+| npm / Node.js | `D:\tools\bin\npm.cmd` / `C:\Program Files\nodejs` | npm 包装脚本指向 Kimi 运行时的 Node；系统 Node 位于 `C:\Program Files\nodejs` |
+| MySQL | `D:\tools\MySQL` | 业务数据库 |
+| Redis | `D:\tools\redis` | 缓存服务 |
+| Git | `D:\tools\Git` | 版本控制 |
+| VS Code | `D:\tools\Microsoft VS Code` | 前端代码编辑器 |
+| IntelliJ IDEA | `D:\tools\IntelliJ IDEA 2026.1` | Java 后端 IDE |
+| Android Studio | `D:\tools\AndroidStudio` | APP 端 IDE |
+| HBuilder X | `D:\tools\HBuilder X` | 跨端开发工具 |
+| DBeaver | `D:\tools\dbeaver` | 数据库客户端 |
+| 微信开发者工具 | `D:\tools\weixinDevTool` | 小程序预览/调试 |
+| 中间件 | `D:\tools\middleware` | 含 Nacos、Elasticsearch、RocketMQ、Seata、Sentinel 等 |
+
+> 提示：日常构建后端可直接使用 `D:\tools\bin\mvn.cmd`，无需手动切换 `JAVA_HOME`。
+
+## 9. 遗留待迭代说明
 
 - 首页「其他服务」区块当前为预留空白，后续有新功能需求时再补充迭代。

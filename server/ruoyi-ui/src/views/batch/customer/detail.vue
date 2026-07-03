@@ -129,7 +129,6 @@
     </el-card>
 
     <customer-migrate-dialog ref="migrateDialogRef" @success="getSubordinateList" />
-    <customer-form-dialog ref="formDialogRef" title="编辑账号" @success="getDetail" />
   </div>
 </template>
 
@@ -138,11 +137,10 @@ import { getCustomer, delCustomer, resetCustomerQrCode } from "@/api/batch/custo
 import { listCustomer } from "@/api/batch/customer"
 import { listStatisticsComputing, listStatisticsVideo } from "@/api/batch/statistics"
 import CustomerMigrateDialog from "./migrate"
-import CustomerFormDialog from "./form"
 
 export default {
   name: "BatchCustomerDetail",
-  components: { CustomerMigrateDialog, CustomerFormDialog },
+  components: { CustomerMigrateDialog },
   data() {
     return {
       loading: false,
@@ -243,7 +241,7 @@ export default {
       this.$router.go(-1)
     },
     handleEdit() {
-      this.$refs.formDialogRef.open(this.customerId)
+      this.$tab.openPage('编辑账号', '/batch/customer/edit/' + this.customerId)
     },
     handleView(row) {
       this.$router.push("/batch/customer/detail/" + row.customerId)

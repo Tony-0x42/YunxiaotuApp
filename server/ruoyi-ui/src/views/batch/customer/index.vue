@@ -37,6 +37,9 @@
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport" v-hasPermi="['batch:customer:export']">导出</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button type="info" plain icon="el-icon-upload2" size="mini" @click="handleImport" v-hasPermi="['batch:customer:add']">导入</el-button>
+      </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
     </el-row>
 
@@ -88,25 +91,56 @@
     </el-table>
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getList" />
 
-    <!-- 新增/编辑账号弹窗 -->
-    <customer-form-dialog ref="formDialogRef" :title="title" @success="getList" />
     <!-- 升级弹窗 -->
     <customer-upgrade-dialog ref="upgradeDialogRef" @success="getList" />
     <!-- 迁移弹窗 -->
     <customer-migrate-dialog ref="migrateDialogRef" @success="getList" />
+
+    <!-- 导入弹窗 -->
+    <el-dialog title="导入客户" :visible.sync="importOpen" width="450px" append-to-body :close-on-click-modal="false">
+      <el-upload ref="uploadRef" drag action="" :auto-upload="false" :limit="1" accept=".xlsx, .xls" :on-change="handleFileChange" :on-remove="handleFileRemove">
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">
+          <span>仅允许导入 xls、xlsx 格式文件。</span>
+          <el-link type="primary" :underline="false" style="font-size: 12px; vertical-align: baseline" @click.prevent="handleDownloadTemplate">下载模板</el-link>
+        </div>
+      </el-upload>
+      <div v-if="importResultVisible" style="margin-top: 15px; padding: 10px; background: #f5f7fa; border-radius: 4px;">
+        <div>成功：<span style="color: #67c23a; font-weight: bold;">{{ importResult.successCount }}</span> 条</div>
+        <div>失败：<span style="color: #f56c6c; font-weight: bold;">{{ importResult.failCount }}</span> 条</div>
+        <el-link v-if="importResult.failCount > 0" type="primary" :underline="false" style="font-size: 12px" @click="handleViewFailList">查看失败条目</el-link>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" :loading="importLoading" @click="submitImport">确 定</el-button>
+        <el-button @click="importOpen = false">取 消</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 失败列表弹窗 -->
+    <el-dialog title="导入失败明细" :visible.sync="failListOpen" width="700px" append-to-body :close-on-click-modal="false">
+      <el-table :data="importResult.failList" max-height="400">
+        <el-table-column label="行号" align="center" prop="rowNum" width="80" />
+        <el-table-column label="账号名称" align="center" prop="customerName" :show-overflow-tooltip="true" />
+        <el-table-column label="手机号" align="center" prop="phone" width="120" />
+        <el-table-column label="失败原因" align="center" prop="reason" :show-overflow-tooltip="true" />
+      </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="failListOpen = false">关 闭</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { listCustomer, delCustomer, changeCustomerStatus, exportCustomer } from "@/api/batch/customer"
-import CustomerFormDialog from "./form"
+import { listCustomer, delCustomer, changeCustomerStatus, exportCustomer, importData } from "@/api/batch/customer"
 import CustomerUpgradeDialog from "./upgrade"
 import CustomerMigrateDialog from "./migrate"
 import { checkPermi } from "@/utils/permission"
 
 export default {
   name: "BatchCustomer",
-  components: { CustomerFormDialog, CustomerUpgradeDialog, CustomerMigrateDialog },
+  components: { CustomerUpgradeDialog, CustomerMigrateDialog },
   data() {
     return {
       loading: true,
@@ -116,7 +150,6 @@ export default {
       showSearch: true,
       total: 0,
       customerList: [],
-      title: "",
       queryParams: {
         pageNum: 1,
         pageSize: 10,
@@ -145,7 +178,18 @@ export default {
         subordinateCount: { label: '下级数量', visible: true },
         status: { label: '状态', visible: true },
         createTime: { label: '创建时间', visible: true }
-      }
+      },
+      // 导入相关
+      importOpen: false,
+      importLoading: false,
+      importResultVisible: false,
+      importResult: {
+        successCount: 0,
+        failCount: 0,
+        failList: []
+      },
+      importFile: null,
+      failListOpen: false
     }
   },
   created() {
@@ -207,13 +251,11 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.title = "新增账号"
-      this.$refs.formDialogRef.open()
+      this.$tab.openPage('新增账号', '/batch/customer/add')
     },
     /** 编辑按钮操作 */
     handleUpdate(row) {
-      this.title = "编辑账号"
-      this.$refs.formDialogRef.open(row.customerId)
+      this.$tab.openPage('编辑账号', '/batch/customer/edit/' + row.customerId)
     },
     /** 查看按钮操作 */
     handleView(row) {
@@ -246,6 +288,59 @@ export default {
       this.download('/batch/customer/export', {
         ...this.queryParams
       }, `customer_${new Date().getTime()}.xlsx`)
+    },
+    /** 导入按钮操作 */
+    handleImport() {
+      this.importOpen = true
+      this.importResultVisible = false
+      this.importResult = { successCount: 0, failCount: 0, failList: [] }
+      this.importFile = null
+      this.$nextTick(() => {
+        this.$refs.uploadRef && this.$refs.uploadRef.clearFiles()
+      })
+    },
+    /** 下载导入模板 */
+    handleDownloadTemplate() {
+      this.download('/batch/customer/importTemplate', {}, `customer_import_template_${new Date().getTime()}.xlsx`)
+    },
+    /** 文件选择变化 */
+    handleFileChange(file, fileList) {
+      this.importFile = file.raw
+      this.importResultVisible = false
+    },
+    /** 文件移除 */
+    handleFileRemove() {
+      this.importFile = null
+      this.importResultVisible = false
+    },
+    /** 提交导入 */
+    submitImport() {
+      if (!this.importFile) {
+        this.$modal.msgError("请选择要上传的文件")
+        return
+      }
+      const name = this.importFile.name.toLowerCase()
+      if (!name.endsWith('.xls') && !name.endsWith('.xlsx')) {
+        this.$modal.msgError("请选择后缀为 xls 或 xlsx 的文件")
+        return
+      }
+      this.importLoading = true
+      const formData = new FormData()
+      formData.append('file', this.importFile)
+      importData(formData).then(response => {
+        this.importResult.successCount = response.data.successCount || 0
+        this.importResult.failCount = response.data.failCount || 0
+        this.importResult.failList = response.data.failList || []
+        this.importResultVisible = true
+        this.$modal.msgSuccess(`导入完成：成功 ${this.importResult.successCount} 条，失败 ${this.importResult.failCount} 条`)
+        this.getList()
+      }).finally(() => {
+        this.importLoading = false
+      })
+    },
+    /** 查看失败列表 */
+    handleViewFailList() {
+      this.failListOpen = true
     }
   }
 }

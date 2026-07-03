@@ -39,13 +39,14 @@ const permission = {
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
-          rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
-          router.addRoutes(asyncRoutes)
-          commit('SET_ROUTES', rewriteRoutes)
+          // 菜单路由优先注册，避免与 /batch/customer 等动态路由同路径冲突导致页面空白
+          const accessRoutes = rewriteRoutes.concat(asyncRoutes)
+          accessRoutes.push({ path: '*', redirect: '/404', hidden: true })
+          commit('SET_ROUTES', accessRoutes)
           commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
           commit('SET_DEFAULT_ROUTES', sidebarRoutes)
           commit('SET_TOPBAR_ROUTES', sidebarRoutes)
-          resolve(rewriteRoutes)
+          resolve(accessRoutes)
         })
       })
     }

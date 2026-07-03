@@ -1,5 +1,6 @@
 package com.ruoyi.batch.customer.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -22,6 +25,7 @@ import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.batch.customer.domain.BatchCustomer;
+import com.ruoyi.batch.customer.domain.BatchCustomerImportResult;
 import com.ruoyi.batch.customer.service.IBatchCustomerService;
 
 /**
@@ -76,6 +80,34 @@ public class BatchCustomerController extends BaseController
         List<BatchCustomer> list = batchCustomerService.selectBatchCustomerList(batchCustomer);
         ExcelUtil<BatchCustomer> util = new ExcelUtil<BatchCustomer>(BatchCustomer.class);
         util.exportExcel(response, list, "客户数据");
+    }
+
+    /**
+     * 下载导入模板
+     */
+    @PreAuthorize("@ss.hasPermi('batch:customer:add')")
+    @Log(title = "客户管理", businessType = BusinessType.EXPORT)
+    @PostMapping("/importTemplate")
+    public void importTemplate(HttpServletResponse response)
+    {
+        ExcelUtil<BatchCustomer> util = new ExcelUtil<BatchCustomer>(BatchCustomer.class);
+        util.exportExcel(response, new ArrayList<>(), "客户导入模板");
+    }
+
+    /**
+     * 导入客户数据
+     */
+    @PreAuthorize("@ss.hasPermi('batch:customer:add')")
+    @Log(title = "客户管理", businessType = BusinessType.IMPORT)
+    @PostMapping("/importData")
+    public AjaxResult importData(@RequestParam("file") MultipartFile file) throws Exception
+    {
+        BatchCustomerImportResult result = batchCustomerService.importCustomer(file.getInputStream());
+        AjaxResult ajax = AjaxResult.success();
+        ajax.put("successCount", result.getSuccessCount());
+        ajax.put("failCount", result.getFailCount());
+        ajax.put("failList", result.getFailList());
+        return ajax;
     }
 
     /**

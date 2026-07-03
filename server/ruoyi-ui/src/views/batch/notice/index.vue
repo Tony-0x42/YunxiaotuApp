@@ -165,57 +165,6 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改公告对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="850px" append-to-body :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="90px">
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="公告标题" prop="noticeTitle">
-              <el-input v-model="form.noticeTitle" placeholder="请输入公告标题" maxlength="200" show-word-limit />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="公告类型" prop="noticeType">
-              <el-select v-model="form.noticeType" placeholder="请选择公告类型" style="width: 100%">
-                <el-option
-                  v-for="item in noticeTypeOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="发布状态" prop="publishStatus">
-              <el-select v-model="form.publishStatus" placeholder="请选择发布状态" style="width: 100%">
-                <el-option
-                  v-for="item in publishStatusFormOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="封面图">
-              <image-upload v-model="form.coverUrl" :limit="1" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="公告内容" prop="content">
-              <editor v-model="form.content" :min-height="320" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-    </el-dialog>
-
     <!-- 公告预览对话框 -->
     <el-dialog title="公告预览" :visible.sync="previewOpen" width="460px" append-to-body :close-on-click-modal="false">
       <div class="notice-preview">
@@ -235,7 +184,7 @@
 </template>
 
 <script>
-import { listNotice, getNotice, addNotice, updateNotice, delNotice, publishNotice, unpublishNotice } from "@/api/batch/notice"
+import { listNotice, getNotice, delNotice, publishNotice, unpublishNotice } from "@/api/batch/notice"
 
 export default {
   name: "BatchNotice",
@@ -255,10 +204,6 @@ export default {
       total: 0,
       // 公告表格数据
       noticeList: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
       // 预览弹窗
       previewOpen: false,
       previewData: {},
@@ -272,23 +217,6 @@ export default {
         noticeType: undefined,
         publishStatus: undefined
       },
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {
-        noticeTitle: [
-          { required: true, message: "公告标题不能为空", trigger: "blur" }
-        ],
-        noticeType: [
-          { required: true, message: "公告类型不能为空", trigger: "change" }
-        ],
-        publishStatus: [
-          { required: true, message: "发布状态不能为空", trigger: "change" }
-        ],
-        content: [
-          { required: true, message: "公告内容不能为空", trigger: "blur" }
-        ]
-      },
       noticeTypeOptions: [
         { value: 1, label: "通知" },
         { value: 2, label: "活动" },
@@ -297,10 +225,6 @@ export default {
       publishStatusOptions: [
         { value: 0, label: "已发布" },
         { value: 1, label: "已下架" },
-        { value: 2, label: "暂存" }
-      ],
-      publishStatusFormOptions: [
-        { value: 0, label: "立即发布" },
         { value: 2, label: "暂存" }
       ]
     }
@@ -326,24 +250,6 @@ export default {
         this.loading = false
       })
     },
-    // 取消按钮
-    cancel() {
-      this.open = false
-      this.reset()
-    },
-    // 表单重置
-    reset() {
-      this.form = {
-        noticeId: undefined,
-        noticeTitle: undefined,
-        noticeType: 1,
-        coverUrl: undefined,
-        content: undefined,
-        publishStatus: 0,
-        readCount: 0
-      }
-      this.resetForm("form")
-    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1
@@ -363,23 +269,12 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.reset()
-      this.open = true
-      this.title = "新增公告"
+      this.$tab.openPage('新增公告', '/batch/notice/add')
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset()
       const noticeId = row.noticeId || this.ids
-      getNotice(noticeId).then(response => {
-        this.form = response.data
-        // 已下架时编辑也保持下架状态，其余状态可继续编辑
-        if (this.form.publishStatus === undefined || this.form.publishStatus === null) {
-          this.form.publishStatus = 0
-        }
-        this.open = true
-        this.title = "编辑公告"
-      })
+      this.$tab.openPage('编辑公告', '/batch/notice/edit/' + noticeId, { oldStatus: row.publishStatus })
     },
     /** 查看公告 */
     handleView(row) {
@@ -405,34 +300,6 @@ export default {
         this.getList()
         this.$modal.msgSuccess("下架成功")
       }).catch(() => {})
-    },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          const data = { ...this.form }
-          // 下架状态编辑时不允许直接改回已发布，需通过发布按钮操作
-          if (this.form.noticeId && data.publishStatus === 0) {
-            const old = this.noticeList.find(item => item.noticeId === data.noticeId)
-            if (old && old.publishStatus === 1) {
-              data.publishStatus = 1
-            }
-          }
-          if (this.form.noticeId != undefined) {
-            updateNotice(data).then(() => {
-              this.$modal.msgSuccess("修改成功")
-              this.open = false
-              this.getList()
-            })
-          } else {
-            addNotice(data).then(() => {
-              this.$modal.msgSuccess("新增成功")
-              this.open = false
-              this.getList()
-            })
-          }
-        }
-      })
     },
     /** 删除按钮操作 */
     handleDelete(row) {
