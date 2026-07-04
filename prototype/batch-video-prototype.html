@@ -2003,18 +2003,10 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">各地经销负责人</label>
-                <div class="space-y-3">
-                  <div class="grid grid-cols-3 gap-3">
-                    <input type="text" value="张经理" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="姓名">
-                    <input type="text" value="华东地区" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="区域">
-                    <input type="text" value="138-0000-0001" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="电话">
-                  </div>
-                  <div class="grid grid-cols-3 gap-3">
-                    <input type="text" value="李经理" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="姓名">
-                    <input type="text" value="华南地区" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="区域">
-                    <input type="text" value="138-0000-0002" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="电话">
-                  </div>
+                <div id="contactManagersList" class="space-y-3">
+                  <!-- 由 JS 动态渲染 -->
                 </div>
+                <button onclick="addContactManager()" class="mt-3 text-sm text-primary border border-primary px-4 py-2 rounded-lg">+ 新增负责人</button>
               </div>
               <div class="pt-4">
                 <button onclick="showToast('联系方式保存成功')" class="bg-primary text-white px-6 py-2 rounded-lg text-sm">保存联系方式</button>
@@ -2260,6 +2252,12 @@
     // AI 视频分割 pending 状态
     let pendingSplitSegments = 0;
     let splitDurationValue = '2.5';
+
+    // 系统配置 - 联系方式：各地经销负责人
+    let appContactManagers = [
+      { id: 1, name: '张经理', region: '华东地区', phone: '138-0000-0001' },
+      { id: 2, name: '李经理', region: '华南地区', phone: '138-0000-0002' }
+    ];
 
     // 侧边目录切换
     function toggleNavPanel() {
@@ -2609,6 +2607,9 @@
       });
       document.querySelectorAll('.system-tab-content').forEach(c => c.classList.add('hidden'));
       document.getElementById('system-tab-' + tabName).classList.remove('hidden');
+      if (tabName === 'contact') {
+        renderContactManagers();
+      }
     }
 
     // 首页内容管理 Tab 切换
@@ -2625,6 +2626,37 @@
       });
       document.querySelectorAll('.home-tab-content').forEach(c => c.classList.add('hidden'));
       document.getElementById('home-tab-' + tabName).classList.remove('hidden');
+    }
+
+    // 渲染联系方式 - 各地经销负责人列表
+    function renderContactManagers() {
+      const container = document.getElementById('contactManagersList');
+      if (!container) return;
+      let html = '';
+      appContactManagers.forEach((mgr, index) => {
+        html += `
+          <div class="grid grid-cols-3 gap-3 items-center">
+            <input type="text" value="${mgr.name}" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="姓名" onchange="appContactManagers[${index}].name = this.value">
+            <input type="text" value="${mgr.region}" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="区域" onchange="appContactManagers[${index}].region = this.value">
+            <div class="flex gap-2">
+              <input type="text" value="${mgr.phone}" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="电话" onchange="appContactManagers[${index}].phone = this.value">
+              <button onclick="deleteContactManager(${index})" class="px-3 py-2 text-red-500 border border-red-300 rounded-lg text-sm hover:bg-red-50">删除</button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function addContactManager() {
+      const newId = appContactManagers.length > 0 ? Math.max(...appContactManagers.map(m => m.id)) + 1 : 1;
+      appContactManagers.push({ id: newId, name: '', region: '', phone: '' });
+      renderContactManagers();
+    }
+
+    function deleteContactManager(index) {
+      appContactManagers.splice(index, 1);
+      renderContactManagers();
     }
 
     // 保存全局参数（分镜头配置等）
