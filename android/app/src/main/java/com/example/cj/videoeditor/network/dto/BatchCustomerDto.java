@@ -55,6 +55,9 @@ public class BatchCustomerDto {
     @SerializedName("qrCodeKey")
     private String qrCodeKey;
 
+    @SerializedName("avatarUrl")
+    private String avatarUrl;
+
     @SerializedName("status")
     private Integer status;
 
@@ -202,6 +205,14 @@ public class BatchCustomerDto {
 
     public void setQrCodeKey(String qrCodeKey) {
         this.qrCodeKey = qrCodeKey;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public Integer getStatus() {
