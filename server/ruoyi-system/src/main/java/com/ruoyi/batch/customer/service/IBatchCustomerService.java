@@ -54,6 +54,14 @@ public interface IBatchCustomerService
     public int insertBatchCustomer(BatchCustomer batchCustomer);
 
     /**
+     * APP 自助注册个人账号
+     *
+     * @param batchCustomer 客户信息
+     * @return 影响行数
+     */
+    public int registerAppCustomer(BatchCustomer batchCustomer);
+
+    /**
      * 修改客户
      *
      * @param batchCustomer 客户信息

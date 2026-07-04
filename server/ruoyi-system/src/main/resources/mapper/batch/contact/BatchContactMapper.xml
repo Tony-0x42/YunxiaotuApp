@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.batch.contact.mapper.BatchContactMapper">
+
+    <resultMap type="com.ruoyi.batch.contact.domain.BatchContact" id="BatchContactResult">
+        <id     property="contactId"     column="contact_id"     />
+        <result property="contactName"   column="contact_name"   />
+        <result property="region"        column="region"         />
+        <result property="phone"         column="phone"          />
+        <result property="contactType"   column="contact_type"   />
+        <result property="sortWeight"    column="sort_weight"    />
+        <result property="status"        column="status"         />
+        <result property="delFlag"       column="del_flag"       />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"        column="remark"         />
+    </resultMap>
+
+    <sql id="selectBatchContactVo">
+        select contact_id, contact_name, region, phone, contact_type, sort_weight, status, del_flag,
+               create_by, create_time, update_by, update_time, remark
+        from batch_contact
+    </sql>
+
+    <select id="selectBatchContactList" parameterType="com.ruoyi.batch.contact.domain.BatchContact" resultMap="BatchContactResult">
+        <include refid="selectBatchContactVo"/>
+        <where>
+            <if test="contactId != null">AND contact_id = #{contactId}</if>
+            <if test="contactName != null and contactName != ''">AND contact_name like concat('%', #{contactName}, '%')</if>
+            <if test="region != null and region != ''">AND region like concat('%', #{region}, '%')</if>
+            <if test="phone != null and phone != ''">AND phone = #{phone}</if>
+            <if test="contactType != null">AND contact_type = #{contactType}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="delFlag != null">AND del_flag = #{delFlag}</if>
+        </where>
+        order by contact_type asc, sort_weight asc, contact_id asc
+    </select>
+
+    <select id="selectBatchContactById" parameterType="Long" resultMap="BatchContactResult">
+        <include refid="selectBatchContactVo"/>
+        where contact_id = #{contactId}
+    </select>
+
+    <insert id="insertBatchContact" parameterType="com.ruoyi.batch.contact.domain.BatchContact" useGeneratedKeys="true" keyProperty="contactId">
+        insert into batch_contact
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="contactName != null and contactName != ''">contact_name,</if>
+            <if test="region != null and region != ''">region,</if>
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="contactType != null">contact_type,</if>
+            <if test="sortWeight != null">sort_weight,</if>
+            <if test="status != null">status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="contactName != null and contactName != ''">#{contactName},</if>
+            <if test="region != null and region != ''">#{region},</if>
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="contactType != null">#{contactType},</if>
+            <if test="sortWeight != null">#{sortWeight},</if>
+            <if test="status != null">#{status},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateBatchContact" parameterType="com.ruoyi.batch.contact.domain.BatchContact">
+        update batch_contact
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="contactName != null and contactName != ''">contact_name = #{contactName},</if>
+            <if test="region != null">region = #{region},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="contactType != null">contact_type = #{contactType},</if>
+            <if test="sortWeight != null">sort_weight = #{sortWeight},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where contact_id = #{contactId}
+    </update>
+
+    <update id="deleteBatchContactById" parameterType="Long">
+        update batch_contact set del_flag = 2 where contact_id = #{contactId}
+    </update>
+
+    <update id="deleteBatchContactByIds">
+        update batch_contact set del_flag = 2 where contact_id in
+        <foreach collection="array" item="contactId" open="(" separator="," close=")">
+            #{contactId}
+        </foreach>
+    </update>
+
+</mapper>

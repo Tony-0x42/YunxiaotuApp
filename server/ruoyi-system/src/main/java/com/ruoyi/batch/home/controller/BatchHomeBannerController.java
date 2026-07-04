@@ -36,7 +36,7 @@ public class BatchHomeBannerController extends BaseController
     /**
      * 查询首页轮播图列表
      */
-    @PreAuthorize("@ss.hasPermi('batch:home:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:home:list') or @ss.hasPermi('app:user')")
     @GetMapping("/list")
     public TableDataInfo list(BatchHomeBanner banner)
     {

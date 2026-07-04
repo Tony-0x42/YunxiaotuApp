@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.bean.Banner;
 import java.util.List;
@@ -40,6 +41,11 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.VH> {
     public void onBindViewHolder(@NonNull VH holder, int position) {
         Banner item = data.get(position);
         holder.tvTitle.setText(item.getTitle());
+        Glide.with(holder.ivBanner.getContext())
+                .load(item.getImageUrl())
+                .placeholder(R.drawable.ic_home)
+                .error(R.drawable.ic_home)
+                .into(holder.ivBanner);
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onBannerClick(item);
         });

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.batch.aivideo.mapper.BatchAiVideoGroupMapper">
+
+    <resultMap type="com.ruoyi.batch.aivideo.domain.BatchAiVideoGroup" id="BatchAiVideoGroupResult">
+        <id     property="groupId"        column="group_id"        />
+        <result property="phone"          column="phone"           />
+        <result property="groupName"      column="group_name"      />
+        <result property="generatedCount" column="generated_count" />
+        <result property="maxLimit"       column="max_limit"       />
+        <result property="status"         column="status"          />
+        <result property="delFlag"        column="del_flag"        />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateTime"     column="update_time"     />
+    </resultMap>
+
+    <sql id="selectBatchAiVideoGroupVo">
+        select group_id, phone, group_name, generated_count, max_limit, status, del_flag, create_time, update_time
+        from batch_ai_video_group
+    </sql>
+
+    <select id="selectBatchAiVideoGroupList" parameterType="com.ruoyi.batch.aivideo.domain.BatchAiVideoGroup" resultMap="BatchAiVideoGroupResult">
+        <include refid="selectBatchAiVideoGroupVo"/>
+        where del_flag = 0
+        <if test="phone != null and phone != ''"> and phone = #{phone} </if>
+        <if test="groupName != null and groupName != ''"> and group_name like concat('%', #{groupName}, '%') </if>
+        <if test="status != null"> and status = #{status} </if>
+        order by create_time desc
+    </select>
+
+    <select id="selectBatchAiVideoGroupById" parameterType="Long" resultMap="BatchAiVideoGroupResult">
+        <include refid="selectBatchAiVideoGroupVo"/>
+        where group_id = #{groupId} and del_flag = 0
+    </select>
+
+    <insert id="insertBatchAiVideoGroup" parameterType="com.ruoyi.batch.aivideo.domain.BatchAiVideoGroup" useGeneratedKeys="true" keyProperty="groupId">
+        insert into batch_ai_video_group
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="groupName != null and groupName != ''">group_name,</if>
+            <if test="generatedCount != null">generated_count,</if>
+            <if test="maxLimit != null">max_limit,</if>
+            <if test="status != null">status,</if>
+            <if test="delFlag != null">del_flag,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="groupName != null and groupName != ''">#{groupName},</if>
+            <if test="generatedCount != null">#{generatedCount},</if>
+            <if test="maxLimit != null">#{maxLimit},</if>
+            <if test="status != null">#{status},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBatchAiVideoGroup" parameterType="com.ruoyi.batch.aivideo.domain.BatchAiVideoGroup">
+        update batch_ai_video_group
+        <set>
+            <if test="groupName != null and groupName != ''">group_name = #{groupName},</if>
+            <if test="generatedCount != null">generated_count = #{generatedCount},</if>
+            <if test="maxLimit != null">max_limit = #{maxLimit},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+        </set>
+        where group_id = #{groupId}
+    </update>
+
+    <update id="deleteBatchAiVideoGroupById">
+        update batch_ai_video_group set del_flag = 2 where group_id = #{groupId}
+    </update>
+
+    <update id="incrementGeneratedCount">
+        update batch_ai_video_group
+        set generated_count = generated_count + 1
+        where group_id = #{groupId}
+    </update>
+
+</mapper>

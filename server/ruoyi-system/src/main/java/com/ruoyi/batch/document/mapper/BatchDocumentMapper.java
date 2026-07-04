@@ -35,6 +35,13 @@ public interface BatchDocumentMapper
     public List<BatchDocument> selectEnabledByTypeAndPage(BatchDocument batchDocument);
 
     /**
+     * 查询启用状态的文档分类列表
+     *
+     * @return 分类名称集合
+     */
+    public List<String> selectCategoryList();
+
+    /**
      * 新增文档管理
      *
      * @param batchDocument 文档管理

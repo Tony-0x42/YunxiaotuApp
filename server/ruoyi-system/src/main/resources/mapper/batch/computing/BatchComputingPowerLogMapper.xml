@@ -41,4 +41,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         order by create_time desc
     </select>
 
+    <insert id="insert" parameterType="com.ruoyi.batch.computing.domain.BatchComputingPowerLog" useGeneratedKeys="true" keyProperty="id">
+        insert into batch_computing_power_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="operationType != null">operation_type,</if>
+            <if test="consumeValue != null">consume_value,</if>
+            <if test="remainValue != null">remain_value,</if>
+            <if test="videoGroupName != null">video_group_name,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="operationType != null">#{operationType},</if>
+            <if test="consumeValue != null">#{consumeValue},</if>
+            <if test="remainValue != null">#{remainValue},</if>
+            <if test="videoGroupName != null">#{videoGroupName},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
 </mapper>

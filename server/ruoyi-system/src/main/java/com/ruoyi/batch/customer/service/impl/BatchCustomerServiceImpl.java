@@ -111,6 +111,43 @@ public class BatchCustomerServiceImpl implements IBatchCustomerService
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public int registerAppCustomer(BatchCustomer batchCustomer)
+    {
+        if (!checkPhoneUnique(batchCustomer.getPhone(), null))
+        {
+            throw new ServiceException("该手机号已被注册");
+        }
+
+        batchCustomer.setCustomerType(TYPE_INDIVIDUAL);
+        batchCustomer.setDelFlag(DEL_FLAG_EXIST);
+        batchCustomer.setStatus(STATUS_ENABLE);
+        batchCustomer.setComputingPowerUsed(BigDecimal.ZERO);
+        batchCustomer.setComputingPowerRemain(batchCustomer.getComputingPowerTotal());
+
+        if (StringUtils.isNotEmpty(batchCustomer.getParentPhone()))
+        {
+            BatchCustomer parent = selectBatchCustomerByPhone(batchCustomer.getParentPhone());
+            validateParent(parent, TYPE_INDIVIDUAL);
+            checkParentQuota(parent, TYPE_INDIVIDUAL);
+            batchCustomer.setBranchPhone(buildBranchPhone(parent, batchCustomer));
+        }
+        else
+        {
+            batchCustomer.setBranchPhone("");
+        }
+
+        batchCustomer.setCreateTime(DateUtils.getNowDate());
+        int rows = batchCustomerMapper.insertBatchCustomer(batchCustomer);
+
+        // 生成二维码
+        String qrCodeUrl = generateQrCode(batchCustomer.getCustomerId());
+        batchCustomer.setQrCodeUrl(qrCodeUrl);
+
+        return rows;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateBatchCustomer(BatchCustomer batchCustomer)
     {
         BatchCustomer original = selectBatchCustomerById(batchCustomer.getCustomerId());

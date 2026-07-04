@@ -117,4 +117,13 @@ public interface BatchCustomerMapper
      * @return 影响行数
      */
     public int updateVipExpireDateBatch(@Param("customerIds") Long[] customerIds, @Param("vipExpireDate") java.util.Date vipExpireDate);
+
+    /**
+     * 扣减算力
+     *
+     * @param customerId 客户ID
+     * @param value 扣减值
+     * @return 影响行数
+     */
+    public int consumeComputingPower(@Param("customerId") Long customerId, @Param("value") java.math.BigDecimal value);
 }

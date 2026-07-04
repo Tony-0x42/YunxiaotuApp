@@ -32,6 +32,10 @@ public class BatchDocument extends BaseEntity
     @Excel(name = "适用页面")
     private String applyPages;
 
+    /** 文档分类 */
+    @Excel(name = "文档分类")
+    private String category;
+
     /** 富文本内容 */
     private String content;
 
@@ -90,6 +94,17 @@ public class BatchDocument extends BaseEntity
         return applyPages;
     }
 
+    public void setCategory(String category)
+    {
+        this.category = category;
+    }
+
+    @Size(min = 0, max = 100, message = "文档分类不能超过100个字符")
+    public String getCategory()
+    {
+        return category;
+    }
+
     public void setContent(String content)
     {
         this.content = content;
@@ -139,6 +154,7 @@ public class BatchDocument extends BaseEntity
             .append("documentTitle", getDocumentTitle())
             .append("documentType", getDocumentType())
             .append("applyPages", getApplyPages())
+            .append("category", getCategory())
             .append("content", getContent())
             .append("sortWeight", getSortWeight())
             .append("status", getStatus())

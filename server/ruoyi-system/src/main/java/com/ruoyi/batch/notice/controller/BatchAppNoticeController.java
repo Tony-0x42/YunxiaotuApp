@@ -36,7 +36,7 @@ public class BatchAppNoticeController extends BaseController
     /**
      * 查询APP公告列表
      */
-    @PreAuthorize("@ss.hasPermi('batch:notice:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:notice:list') or @ss.hasPermi('app:user')")
     @GetMapping("/list")
     public TableDataInfo list(BatchAppNotice batchAppNotice)
     {
@@ -61,7 +61,7 @@ public class BatchAppNoticeController extends BaseController
     /**
      * 获取APP公告详细信息
      */
-    @PreAuthorize("@ss.hasPermi('batch:notice:query')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:notice:query') or @ss.hasPermi('app:user')")
     @GetMapping(value = "/{noticeId}")
     public AjaxResult getInfo(@PathVariable("noticeId") Long noticeId)
     {

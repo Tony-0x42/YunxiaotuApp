@@ -311,6 +311,46 @@ export const dynamicRoutes = [
         meta: { title: '修改文档', activeMenu: '/batch/document' }
       }
     ]
+  },
+  {
+    path: '/batch/brand',
+    component: Layout,
+    hidden: true,
+    permissions: ['batch:brand:list'],
+    children: [
+      {
+        path: 'add',
+        component: () => import('@/views/batch/brand/form'),
+        name: 'BatchBrandAdd',
+        meta: { title: '新增品牌专区', activeMenu: '/batch/brand' }
+      },
+      {
+        path: 'edit/:brandId(\\d+)',
+        component: () => import('@/views/batch/brand/form'),
+        name: 'BatchBrandEdit',
+        meta: { title: '修改品牌专区', activeMenu: '/batch/brand' }
+      }
+    ]
+  },
+  {
+    path: '/batch/contact',
+    component: Layout,
+    hidden: true,
+    permissions: ['batch:contact:list'],
+    children: [
+      {
+        path: 'add',
+        component: () => import('@/views/batch/contact/form'),
+        name: 'BatchContactAdd',
+        meta: { title: '新增联系方式', activeMenu: '/batch/contact' }
+      },
+      {
+        path: 'edit/:contactId(\\d+)',
+        component: () => import('@/views/batch/contact/form'),
+        name: 'BatchContactEdit',
+        meta: { title: '修改联系方式', activeMenu: '/batch/contact' }
+      }
+    ]
   }
 ]
 

@@ -3,6 +3,7 @@ package com.example.cj.videoeditor.utils;
 import android.content.Context;
 
 import com.example.cj.videoeditor.bean.User;
+import com.example.cj.videoeditor.network.dto.BatchCustomerDto;
 
 public class UserStore {
 
@@ -17,6 +18,25 @@ public class UserStore {
         SharedPrefUtil.putString(context, AppConfig.SP_KEY_USER_VIP_EXPIRE, user.getVipExpire());
         SharedPrefUtil.putInt(context, AppConfig.SP_KEY_COMPUTE_TOTAL, user.getComputePower());
         SharedPrefUtil.putInt(context, AppConfig.SP_KEY_COMPUTE_USED, user.getUsedComputePower());
+    }
+
+    public static void saveCustomerDto(Context context, BatchCustomerDto dto) {
+        if (dto == null) return;
+        SharedPrefUtil.putBoolean(context, AppConfig.SP_KEY_IS_LOGIN, true);
+        if (dto.getCustomerId() != null) {
+            SharedPrefUtil.putString(context, AppConfig.SP_KEY_USER_ID, String.valueOf(dto.getCustomerId()));
+        }
+        SharedPrefUtil.putString(context, AppConfig.SP_KEY_USER_PHONE, dto.getPhone());
+        SharedPrefUtil.putString(context, AppConfig.SP_KEY_USER_NAME,
+                dto.getCustomerName() != null ? dto.getCustomerName() : dto.getContactName());
+        SharedPrefUtil.putString(context, AppConfig.SP_KEY_USER_AVATAR, dto.getQrCodeUrl());
+        boolean vip = dto.getVipExpireDate() != null && !dto.getVipExpireDate().isEmpty();
+        SharedPrefUtil.putBoolean(context, AppConfig.SP_KEY_USER_VIP, vip);
+        SharedPrefUtil.putString(context, AppConfig.SP_KEY_USER_VIP_EXPIRE, dto.getVipExpireDate());
+        SharedPrefUtil.putInt(context, AppConfig.SP_KEY_COMPUTE_TOTAL,
+                dto.getComputingPowerTotal() != null ? dto.getComputingPowerTotal().intValue() : 0);
+        SharedPrefUtil.putInt(context, AppConfig.SP_KEY_COMPUTE_USED,
+                dto.getComputingPowerUsed() != null ? dto.getComputingPowerUsed().intValue() : 0);
     }
 
     public static User getUser(Context context) {

@@ -35,7 +35,7 @@ public class BatchDocumentController extends BaseController
     /**
      * 查询文档管理列表
      */
-    @PreAuthorize("@ss.hasPermi('batch:document:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:document:list') or @ss.hasPermi('app:user')")
     @GetMapping("/list")
     public TableDataInfo list(BatchDocument batchDocument)
     {
@@ -45,9 +45,19 @@ public class BatchDocumentController extends BaseController
     }
 
     /**
+     * 查询启用状态的文档分类列表
+     */
+    @PreAuthorize("@ss.hasPermi('app:user')")
+    @GetMapping("/category/all")
+    public AjaxResult categoryAll()
+    {
+        return success(batchDocumentService.selectCategoryList());
+    }
+
+    /**
      * 根据文档编号获取详细信息
      */
-    @PreAuthorize("@ss.hasPermi('batch:document:query')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:document:query') or @ss.hasPermi('app:user')")
     @GetMapping(value = "/{documentId}")
     public AjaxResult getInfo(@PathVariable Long documentId)
     {

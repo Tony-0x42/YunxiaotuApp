@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.cj.videoeditor.R;
 import java.util.List;
 
@@ -26,7 +27,16 @@ public class SimpleImageAdapter extends RecyclerView.Adapter<SimpleImageAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
-        holder.ivImage.setImageResource(R.drawable.ic_placeholder);
+        String url = data == null ? null : data.get(position);
+        if (url == null || url.isEmpty()) {
+            holder.ivImage.setImageResource(R.drawable.ic_placeholder);
+            return;
+        }
+        Glide.with(holder.ivImage.getContext())
+                .load(url)
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder)
+                .into(holder.ivImage);
     }
 
     @Override

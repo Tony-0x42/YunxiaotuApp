@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
@@ -46,6 +47,10 @@ public class BatchCustomer extends BaseEntity
     @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
     @Excel(name = "手机号")
     private String phone;
+
+    /** 登录密码（BCrypt 加密） */
+    @JsonIgnore
+    private String password;
 
     /** 上级手机号 */
     @Excel(name = "上级手机号")
@@ -156,6 +161,16 @@ public class BatchCustomer extends BaseEntity
     public void setPhone(String phone)
     {
         this.phone = phone;
+    }
+
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public void setPassword(String password)
+    {
+        this.password = password;
     }
 
     public String getParentPhone()

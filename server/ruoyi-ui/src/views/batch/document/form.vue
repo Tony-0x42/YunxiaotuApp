@@ -23,6 +23,18 @@
       </el-row>
       <el-row>
         <el-col :span="12">
+          <el-form-item label="文档分类" prop="category">
+            <el-input v-model="form.category" placeholder="请输入文档分类" maxlength="100" show-word-limit />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="排序权重" prop="sortWeight">
+            <el-input-number v-model="form.sortWeight" :min="0" :max="9999" controls-position="right" style="width: 100%" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="12">
           <el-form-item label="适用页面" prop="applyPagesArray">
             <el-select v-model="form.applyPagesArray" multiple collapse-tags placeholder="请选择适用页面" style="width: 100%">
               <el-option
@@ -32,11 +44,6 @@
                 :value="item.value"
               />
             </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="排序权重" prop="sortWeight">
-            <el-input-number v-model="form.sortWeight" :min="0" :max="9999" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -93,6 +100,7 @@ export default {
         documentId: undefined,
         documentTitle: undefined,
         documentType: undefined,
+        category: undefined,
         applyPagesArray: [],
         content: undefined,
         sortWeight: 0,
@@ -136,6 +144,7 @@ export default {
         documentId: undefined,
         documentTitle: undefined,
         documentType: undefined,
+        category: undefined,
         applyPagesArray: [],
         content: undefined,
         sortWeight: 0,

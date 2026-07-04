@@ -17,4 +17,12 @@ public interface BatchComputingPowerLogMapper
      * @return 结果列表
      */
     public List<BatchComputingPowerLog> selectList(BatchComputingPowerLog batchComputingPowerLog);
+
+    /**
+     * 新增算力消耗日志
+     *
+     * @param batchComputingPowerLog 算力消耗日志
+     * @return 影响行数
+     */
+    public int insert(BatchComputingPowerLog batchComputingPowerLog);
 }

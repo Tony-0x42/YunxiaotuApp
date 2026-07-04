@@ -41,6 +41,15 @@ public class BatchDocumentServiceImpl implements IBatchDocumentService
     }
 
     /**
+     * 查询启用状态的文档分类列表
+     */
+    @Override
+    public List<String> selectCategoryList()
+    {
+        return batchDocumentMapper.selectCategoryList();
+    }
+
+    /**
      * 新增文档管理
      */
     @Override

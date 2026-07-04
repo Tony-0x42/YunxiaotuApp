@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.batch.watermark.mapper.BatchWatermarkParseMapper">
+
+    <resultMap type="com.ruoyi.batch.watermark.domain.BatchWatermarkParse" id="BatchWatermarkParseResult">
+        <id     property="parseId"      column="parse_id"      />
+        <result property="phone"        column="phone"         />
+        <result property="sourceLink"   column="source_link"   />
+        <result property="platform"     column="platform"      />
+        <result property="videoUrl"     column="video_url"     />
+        <result property="imageUrls"    column="image_urls"    />
+        <result property="videoText"    column="video_text"    />
+        <result property="parseStatus"  column="parse_status"  />
+        <result property="failReason"   column="fail_reason"   />
+        <result property="delFlag"      column="del_flag"      />
+        <result property="createBy"     column="create_by"     />
+        <result property="createTime"   column="create_time"   />
+        <result property="updateBy"     column="update_by"     />
+        <result property="updateTime"   column="update_time"   />
+        <result property="remark"       column="remark"        />
+    </resultMap>
+
+    <sql id="selectBatchWatermarkParseVo">
+        select parse_id, phone, source_link, platform, video_url, image_urls, video_text,
+               parse_status, fail_reason, del_flag, create_by, create_time, update_by, update_time, remark
+        from batch_watermark_parse
+    </sql>
+
+    <sql id="whereBatchWatermarkParse">
+        where del_flag = 0
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
+        </if>
+        <if test="sourceLink != null and sourceLink != ''">
+            and source_link like concat('%', #{sourceLink}, '%')
+        </if>
+        <if test="platform != null and platform != ''">
+            and platform = #{platform}
+        </if>
+        <if test="parseStatus != null">
+            and parse_status = #{parseStatus}
+        </if>
+    </sql>
+
+    <select id="selectBatchWatermarkParseList" parameterType="com.ruoyi.batch.watermark.domain.BatchWatermarkParse" resultMap="BatchWatermarkParseResult">
+        <include refid="selectBatchWatermarkParseVo"/>
+        <include refid="whereBatchWatermarkParse"/>
+        order by create_time desc
+    </select>
+
+    <select id="selectBatchWatermarkParseById" parameterType="Long" resultMap="BatchWatermarkParseResult">
+        <include refid="selectBatchWatermarkParseVo"/>
+        where parse_id = #{parseId}
+    </select>
+
+    <insert id="insertBatchWatermarkParse" parameterType="com.ruoyi.batch.watermark.domain.BatchWatermarkParse" useGeneratedKeys="true" keyProperty="parseId">
+        insert into batch_watermark_parse
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="sourceLink != null and sourceLink != ''">source_link,</if>
+            <if test="platform != null and platform != ''">platform,</if>
+            <if test="videoUrl != null">video_url,</if>
+            <if test="imageUrls != null">image_urls,</if>
+            <if test="videoText != null">video_text,</if>
+            <if test="parseStatus != null">parse_status,</if>
+            <if test="failReason != null">fail_reason,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="sourceLink != null and sourceLink != ''">#{sourceLink},</if>
+            <if test="platform != null and platform != ''">#{platform},</if>
+            <if test="videoUrl != null">#{videoUrl},</if>
+            <if test="imageUrls != null">#{imageUrls},</if>
+            <if test="videoText != null">#{videoText},</if>
+            <if test="parseStatus != null">#{parseStatus},</if>
+            <if test="failReason != null">#{failReason},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBatchWatermarkParse" parameterType="com.ruoyi.batch.watermark.domain.BatchWatermarkParse">
+        update batch_watermark_parse
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="videoUrl != null">video_url = #{videoUrl},</if>
+            <if test="imageUrls != null">image_urls = #{imageUrls},</if>
+            <if test="videoText != null">video_text = #{videoText},</if>
+            <if test="parseStatus != null">parse_status = #{parseStatus},</if>
+            <if test="failReason != null">fail_reason = #{failReason},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where parse_id = #{parseId}
+    </update>
+
+    <update id="deleteBatchWatermarkParseByIds">
+        update batch_watermark_parse set del_flag = 2 where parse_id in
+        <foreach collection="array" item="parseId" open="(" separator="," close=")">
+            #{parseId}
+        </foreach>
+    </update>
+
+</mapper>

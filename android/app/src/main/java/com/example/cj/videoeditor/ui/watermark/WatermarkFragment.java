@@ -2,8 +2,6 @@ package com.example.cj.videoeditor.ui.watermark;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,21 +13,38 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.VideoView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.adapter.SimpleImageAdapter;
 import com.example.cj.videoeditor.bean.ParseResult;
+import com.example.cj.videoeditor.network.ApiCallback;
+import com.example.cj.videoeditor.network.ApiService;
+import com.example.cj.videoeditor.network.dto.ComputingConsumeBody;
+import com.example.cj.videoeditor.network.dto.ComputingConsumeDto;
+import com.example.cj.videoeditor.network.dto.WatermarkParseBody;
+import com.example.cj.videoeditor.network.dto.WatermarkParseDto;
 import com.example.cj.videoeditor.utils.AppConfig;
-import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.SharedPrefUtil;
 import com.example.cj.videoeditor.utils.ToastUtil;
 
+import java.util.List;
+
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class WatermarkFragment extends Fragment {
+
+    @Inject
+    ApiService apiService;
 
     private EditText etLink;
     private Button btnParse, btnClear, btnSave;
@@ -89,7 +104,7 @@ public class WatermarkFragment extends Fragment {
         });
 
         videoView.setOnErrorListener((mp, what, extra) -> {
-            // Mock/placeholder video URL may fail; suppress system error dialog
+            // 视频 URL 可能无法直接播放，屏蔽系统错误弹窗
             return true;
         });
     }
@@ -108,13 +123,42 @@ public class WatermarkFragment extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         resultContainer.setVisibility(View.GONE);
         btnParse.setEnabled(false);
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            result = MockDataProvider.getParseResult();
-            progressBar.setVisibility(View.GONE);
-            resultContainer.setVisibility(View.VISIBLE);
-            btnParse.setEnabled(true);
-            showResult();
-        }, 1500);
+
+        apiService.parseWatermark(new WatermarkParseBody(link)).enqueue(new ApiCallback<WatermarkParseDto>() {
+            @Override
+            public void onSuccess(WatermarkParseDto data) {
+                if (!isAdded() || getContext() == null) {
+                    return;
+                }
+                progressBar.setVisibility(View.GONE);
+                btnParse.setEnabled(true);
+                if (data == null) {
+                    ToastUtil.show(getContext(), R.string.parse_failed);
+                    return;
+                }
+                result = toParseResult(data);
+                resultContainer.setVisibility(View.VISIBLE);
+                showResult();
+            }
+
+            @Override
+            public void onError(String msg) {
+                if (!isAdded() || getContext() == null) {
+                    return;
+                }
+                progressBar.setVisibility(View.GONE);
+                btnParse.setEnabled(true);
+                ToastUtil.show(getContext(), msg != null ? msg : getString(R.string.parse_failed));
+            }
+        });
+    }
+
+    private ParseResult toParseResult(WatermarkParseDto dto) {
+        ParseResult parseResult = new ParseResult();
+        parseResult.videoUrl = dto.getVideoUrl();
+        parseResult.images = dto.getImageList();
+        parseResult.text = dto.getVideoText();
+        return parseResult;
     }
 
     private void showResult() {
@@ -147,8 +191,8 @@ public class WatermarkFragment extends Fragment {
 
     private void save() {
         if (result == null) return;
-        int total = SharedPrefUtil.getInt(requireContext(), AppConfig.SP_KEY_COMPUTE_TOTAL, 1000);
-        int used = SharedPrefUtil.getInt(requireContext(), AppConfig.SP_KEY_COMPUTE_USED, 356);
+        int total = SharedPrefUtil.getInt(requireContext(), AppConfig.SP_KEY_COMPUTE_TOTAL, 0);
+        int used = SharedPrefUtil.getInt(requireContext(), AppConfig.SP_KEY_COMPUTE_USED, 0);
         if (used >= total) {
             new AlertDialog.Builder(requireContext())
                     .setMessage(R.string.power_exhausted)
@@ -156,6 +200,33 @@ public class WatermarkFragment extends Fragment {
                     .show();
             return;
         }
-        ToastUtil.show(getContext(), R.string.save_success);
+
+        btnSave.setEnabled(false);
+        apiService.consumeComputingPower(new ComputingConsumeBody(2, 1.0, "watermark_download"))
+                .enqueue(new ApiCallback<ComputingConsumeDto>() {
+                    @Override
+                    public void onSuccess(ComputingConsumeDto data) {
+                        if (!isAdded() || getContext() == null) {
+                            return;
+                        }
+                        btnSave.setEnabled(true);
+                        if (data != null && data.getRemain() != null) {
+                            SharedPrefUtil.putInt(requireContext(), AppConfig.SP_KEY_COMPUTE_USED, total - data.getRemain().intValue());
+                        }
+                        ToastUtil.show(getContext(), R.string.save_success);
+                    }
+
+                    @Override
+                    public void onError(String msg) {
+                        if (!isAdded() || getContext() == null) {
+                            return;
+                        }
+                        btnSave.setEnabled(true);
+                        new AlertDialog.Builder(requireContext())
+                                .setMessage(msg != null ? msg : getString(R.string.power_exhausted))
+                                .setPositiveButton(R.string.confirm, null)
+                                .show();
+                    }
+                });
     }
 }

@@ -9,6 +9,14 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="文档分类" prop="category">
+        <el-input
+          v-model="queryParams.category"
+          placeholder="请输入文档分类"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="文档类型" prop="documentType">
         <el-select v-model="queryParams.documentType" placeholder="全部" clearable style="width: 120px">
           <el-option
@@ -86,6 +94,7 @@
           <el-tag :type="typeStyle(scope.row.documentType)" size="small">{{ typeText(scope.row.documentType) }}</el-tag>
         </template>
       </el-table-column>
+      <el-table-column label="文档分类" align="center" prop="category" width="120" />
       <el-table-column label="适用页面" align="center" prop="applyPages" width="180">
         <template slot-scope="scope">
           <el-tag v-for="(page, index) in formatApplyPages(scope.row.applyPages)" :key="index" size="small" style="margin: 2px">{{ page }}</el-tag>
@@ -214,6 +223,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         documentTitle: undefined,
+        category: undefined,
         documentType: undefined,
         applyPages: undefined,
         status: undefined

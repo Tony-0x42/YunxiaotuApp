@@ -45,3 +45,9 @@ nbdist/
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
+
+# Temporary database check scripts
+Check*.java
+ListDatabases.java
+SqlRunner.java
+schema.txt

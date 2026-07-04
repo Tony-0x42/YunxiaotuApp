@@ -37,7 +37,7 @@ public class BatchHomeTutorialEntryController extends BaseController
     /**
      * 查询首页教程入口列表
      */
-    @PreAuthorize("@ss.hasPermi('batch:home:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:home:list') or @ss.hasPermi('app:user')")
     @GetMapping("/list")
     public TableDataInfo list(BatchHomeTutorialEntry tutorialEntry)
     {

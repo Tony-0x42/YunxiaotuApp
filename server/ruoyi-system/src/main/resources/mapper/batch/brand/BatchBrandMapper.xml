@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.batch.brand.mapper.BatchBrandMapper">
+
+    <resultMap type="com.ruoyi.batch.brand.domain.BatchBrand" id="BatchBrandResult">
+        <id     property="brandId"      column="brand_id"      />
+        <result property="brandName"    column="brand_name"    />
+        <result property="logoUrl"      column="logo_url"      />
+        <result property="intro"        column="intro"         />
+        <result property="detail"       column="detail"        />
+        <result property="mediaUrls"    column="media_urls"    />
+        <result property="sortWeight"   column="sort_weight"   />
+        <result property="status"       column="status"        />
+        <result property="delFlag"      column="del_flag"      />
+        <result property="createBy"     column="create_by"     />
+        <result property="createTime"   column="create_time"   />
+        <result property="updateBy"     column="update_by"     />
+        <result property="updateTime"   column="update_time"   />
+        <result property="remark"       column="remark"        />
+    </resultMap>
+
+    <sql id="selectBatchBrandVo">
+        select brand_id, brand_name, logo_url, intro, detail, media_urls, sort_weight, status, del_flag,
+               create_by, create_time, update_by, update_time, remark
+        from batch_brand
+    </sql>
+
+    <select id="selectBatchBrandList" parameterType="com.ruoyi.batch.brand.domain.BatchBrand" resultMap="BatchBrandResult">
+        <include refid="selectBatchBrandVo"/>
+        <where>
+            <if test="brandId != null">AND brand_id = #{brandId}</if>
+            <if test="brandName != null and brandName != ''">AND brand_name like concat('%', #{brandName}, '%')</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="delFlag != null">AND del_flag = #{delFlag}</if>
+        </where>
+        order by sort_weight asc, brand_id asc
+    </select>
+
+    <select id="selectBatchBrandById" parameterType="Long" resultMap="BatchBrandResult">
+        <include refid="selectBatchBrandVo"/>
+        where brand_id = #{brandId}
+    </select>
+
+    <insert id="insertBatchBrand" parameterType="com.ruoyi.batch.brand.domain.BatchBrand" useGeneratedKeys="true" keyProperty="brandId">
+        insert into batch_brand
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="brandName != null and brandName != ''">brand_name,</if>
+            <if test="logoUrl != null and logoUrl != ''">logo_url,</if>
+            <if test="intro != null and intro != ''">intro,</if>
+            <if test="detail != null and detail != ''">detail,</if>
+            <if test="mediaUrls != null and mediaUrls != ''">media_urls,</if>
+            <if test="sortWeight != null">sort_weight,</if>
+            <if test="status != null">status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="brandName != null and brandName != ''">#{brandName},</if>
+            <if test="logoUrl != null and logoUrl != ''">#{logoUrl},</if>
+            <if test="intro != null and intro != ''">#{intro},</if>
+            <if test="detail != null and detail != ''">#{detail},</if>
+            <if test="mediaUrls != null and mediaUrls != ''">#{mediaUrls},</if>
+            <if test="sortWeight != null">#{sortWeight},</if>
+            <if test="status != null">#{status},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateBatchBrand" parameterType="com.ruoyi.batch.brand.domain.BatchBrand">
+        update batch_brand
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="brandName != null and brandName != ''">brand_name = #{brandName},</if>
+            <if test="logoUrl != null">logo_url = #{logoUrl},</if>
+            <if test="intro != null">intro = #{intro},</if>
+            <if test="detail != null">detail = #{detail},</if>
+            <if test="mediaUrls != null">media_urls = #{mediaUrls},</if>
+            <if test="sortWeight != null">sort_weight = #{sortWeight},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where brand_id = #{brandId}
+    </update>
+
+    <update id="deleteBatchBrandById" parameterType="Long">
+        update batch_brand set del_flag = 2 where brand_id = #{brandId}
+    </update>
+
+    <update id="deleteBatchBrandByIds">
+        update batch_brand set del_flag = 2 where brand_id in
+        <foreach collection="array" item="brandId" open="(" separator="," close=")">
+            #{brandId}
+        </foreach>
+    </update>
+
+</mapper>

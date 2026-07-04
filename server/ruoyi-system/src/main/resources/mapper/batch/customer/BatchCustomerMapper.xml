@@ -10,6 +10,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="customerName"            column="customer_name"            />
         <result property="contactName"             column="contact_name"             />
         <result property="phone"                   column="phone"                    />
+        <result property="password"                column="password"                 />
         <result property="parentPhone"             column="parent_phone"             />
         <result property="branchPhone"             column="branch_phone"             />
         <result property="maxServiceProvider"      column="max_service_provider"     />
@@ -32,7 +33,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectBatchCustomerVo">
-        select c.customer_id, c.customer_type, c.customer_name, c.contact_name, c.phone,
+        select c.customer_id, c.customer_type, c.customer_name, c.contact_name, c.phone, c.password,
                c.parent_phone, c.branch_phone, c.max_service_provider, c.total_individual_capacity,
                c.max_individual, c.computing_power_total, c.computing_power_used,
                c.computing_power_remain, c.vip_expire_date, c.qr_code_url, c.qr_code_key,
@@ -126,6 +127,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="customerName != null and customerName != ''">customer_name,</if>
             <if test="contactName != null and contactName != ''">contact_name,</if>
             <if test="phone != null and phone != ''">phone,</if>
+            <if test="password != null and password != ''">password,</if>
             <if test="parentPhone != null">parent_phone,</if>
             <if test="branchPhone != null">branch_phone,</if>
             <if test="maxServiceProvider != null">max_service_provider,</if>
@@ -148,6 +150,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="customerName != null and customerName != ''">#{customerName},</if>
             <if test="contactName != null and contactName != ''">#{contactName},</if>
             <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="password != null and password != ''">#{password},</if>
             <if test="parentPhone != null">#{parentPhone},</if>
             <if test="branchPhone != null">#{branchPhone},</if>
             <if test="maxServiceProvider != null">#{maxServiceProvider},</if>
@@ -172,6 +175,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="SET" suffixOverrides=",">
             <if test="customerName != null and customerName != ''">customer_name = #{customerName},</if>
             <if test="contactName != null">contact_name = #{contactName},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
             <if test="parentPhone != null">parent_phone = #{parentPhone},</if>
             <if test="branchPhone != null">branch_phone = #{branchPhone},</if>
             <if test="maxServiceProvider != null">max_service_provider = #{maxServiceProvider},</if>
@@ -222,6 +226,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <foreach collection="customerIds" item="customerId" open="(" separator="," close=")">
             #{customerId}
         </foreach>
+    </update>
+
+    <update id="consumeComputingPower">
+        update batch_customer
+        set computing_power_used = computing_power_used + #{value},
+            computing_power_remain = computing_power_remain - #{value},
+            update_time = sysdate()
+        where customer_id = #{customerId}
+          and computing_power_remain &gt;= #{value}
     </update>
 
 </mapper>

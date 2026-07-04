@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.batch.aivideo.mapper.BatchAiVideoClipMapper">
+
+    <resultMap type="com.ruoyi.batch.aivideo.domain.BatchAiVideoClip" id="BatchAiVideoClipResult">
+        <id     property="clipId"      column="clip_id"      />
+        <result property="groupId"     column="group_id"     />
+        <result property="videoUrl"    column="video_url"    />
+        <result property="textContent" column="text_content" />
+        <result property="duration"    column="duration"     />
+        <result property="sortOrder"   column="sort_order"   />
+        <result property="createTime"  column="create_time"  />
+        <result property="updateTime"  column="update_time"  />
+    </resultMap>
+
+    <sql id="selectBatchAiVideoClipVo">
+        select clip_id, group_id, video_url, text_content, duration, sort_order, create_time, update_time
+        from batch_ai_video_clip
+    </sql>
+
+    <select id="selectBatchAiVideoClipByGroupId" parameterType="Long" resultMap="BatchAiVideoClipResult">
+        <include refid="selectBatchAiVideoClipVo"/>
+        where group_id = #{groupId}
+        order by sort_order asc, clip_id asc
+    </select>
+
+    <insert id="insertBatchAiVideoClip" parameterType="com.ruoyi.batch.aivideo.domain.BatchAiVideoClip" useGeneratedKeys="true" keyProperty="clipId">
+        insert into batch_ai_video_clip
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="groupId != null">group_id,</if>
+            <if test="videoUrl != null">video_url,</if>
+            <if test="textContent != null">text_content,</if>
+            <if test="duration != null">duration,</if>
+            <if test="sortOrder != null">sort_order,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="groupId != null">#{groupId},</if>
+            <if test="videoUrl != null">#{videoUrl},</if>
+            <if test="textContent != null">#{textContent},</if>
+            <if test="duration != null">#{duration},</if>
+            <if test="sortOrder != null">#{sortOrder},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBatchAiVideoClip" parameterType="com.ruoyi.batch.aivideo.domain.BatchAiVideoClip">
+        update batch_ai_video_clip
+        <set>
+            <if test="videoUrl != null">video_url = #{videoUrl},</if>
+            <if test="textContent != null">text_content = #{textContent},</if>
+            <if test="duration != null">duration = #{duration},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+        </set>
+        where clip_id = #{clipId}
+    </update>
+
+    <delete id="deleteBatchAiVideoClipByGroupId">
+        delete from batch_ai_video_clip where group_id = #{groupId}
+    </delete>
+
+</mapper>

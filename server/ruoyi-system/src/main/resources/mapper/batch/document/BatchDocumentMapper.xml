@@ -9,6 +9,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="documentTitle"  column="document_title"  />
         <result property="documentType"   column="document_type"   />
         <result property="applyPages"     column="apply_pages"     />
+        <result property="category"       column="category"        />
         <result property="content"        column="content"         />
         <result property="sortWeight"     column="sort_weight"     />
         <result property="status"         column="status"          />
@@ -21,7 +22,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectBatchDocumentVo">
-        select document_id, document_title, document_type, apply_pages, content, sort_weight, status, is_system,
+        select document_id, document_title, document_type, apply_pages, category, content, sort_weight, status, is_system,
                create_by, create_time, update_by, update_time, remark
         from batch_document
     </sql>
@@ -43,6 +44,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="applyPages != null and applyPages != ''">
                 and find_in_set(#{applyPages}, apply_pages)
+            </if>
+            <if test="category != null and category != ''">
+                and category = #{category}
             </if>
             <if test="status != null">
                 and status = #{status}
@@ -74,6 +78,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="documentTitle != null and documentTitle != ''">document_title,</if>
             <if test="documentType != null">document_type,</if>
             <if test="applyPages != null and applyPages != ''">apply_pages,</if>
+            <if test="category != null and category != ''">category,</if>
             <if test="content != null and content != ''">content,</if>
             <if test="sortWeight != null">sort_weight,</if>
             <if test="status != null">status,</if>
@@ -86,6 +91,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="documentTitle != null and documentTitle != ''">#{documentTitle},</if>
             <if test="documentType != null">#{documentType},</if>
             <if test="applyPages != null and applyPages != ''">#{applyPages},</if>
+            <if test="category != null and category != ''">#{category},</if>
             <if test="content != null and content != ''">#{content},</if>
             <if test="sortWeight != null">#{sortWeight},</if>
             <if test="status != null">#{status},</if>
@@ -102,6 +108,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="documentTitle != null and documentTitle != ''">document_title = #{documentTitle},</if>
             <if test="documentType != null">document_type = #{documentType},</if>
             <if test="applyPages != null">apply_pages = #{applyPages},</if>
+            <if test="category != null">category = #{category},</if>
             <if test="content != null">content = #{content},</if>
             <if test="sortWeight != null">sort_weight = #{sortWeight},</if>
             <if test="status != null">status = #{status},</if>
@@ -122,5 +129,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{documentId}
         </foreach>
     </update>
+
+    <select id="selectCategoryList" resultType="java.lang.String">
+        select distinct category
+        from batch_document
+        where del_flag = 0
+          and status = 0
+          and category is not null
+          and category != ''
+        order by category asc
+    </select>
 
 </mapper>

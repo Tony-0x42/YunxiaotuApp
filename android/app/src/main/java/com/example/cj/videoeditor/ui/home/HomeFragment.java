@@ -1,13 +1,16 @@
 package com.example.cj.videoeditor.ui.home;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
+import com.bumptech.glide.Glide;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.activity.BrandActivity;
 import com.example.cj.videoeditor.activity.ContactActivity;
@@ -25,21 +29,37 @@ import com.example.cj.videoeditor.adapter.HomeMenuAdapter;
 import com.example.cj.videoeditor.bean.Announcement;
 import com.example.cj.videoeditor.bean.Banner;
 import com.example.cj.videoeditor.bean.HomeMenu;
-import com.example.cj.videoeditor.utils.MockDataProvider;
+import com.example.cj.videoeditor.network.ApiService;
+import com.example.cj.videoeditor.network.PageApiCallback;
+import com.example.cj.videoeditor.network.dto.BatchHomeBannerDto;
+import com.example.cj.videoeditor.network.dto.BatchHomeEntryDto;
+import com.example.cj.videoeditor.network.dto.BatchHomeNewsDto;
+import com.example.cj.videoeditor.network.dto.BatchHomeTutorialEntryDto;
 import com.example.cj.videoeditor.utils.ToastUtil;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
+import dagger.hilt.android.AndroidEntryPoint;
 
+@AndroidEntryPoint
 public class HomeFragment extends Fragment {
+
+    @Inject
+    ApiService apiService;
 
     private LinearLayout bannerContainer;
     private ViewPager2 viewPagerBanner;
     private LinearLayout indicatorContainer;
     private TextView tvAnnouncementTitle, tvAnnouncementChampion;
     private RecyclerView recyclerMenu;
+    private ProgressBar progressBar;
+    private LinearLayout llTutorial;
+    private ImageView ivTutorialCover;
+    private TextView tvTutorialTitle;
     private List<Banner> banners = new ArrayList<>();
     private BannerAdapter bannerAdapter;
     private final Handler autoScrollHandler = new Handler(Looper.getMainLooper());
+    private int pendingRequests = 0;
 
     @Nullable
     @Override
@@ -56,28 +76,74 @@ public class HomeFragment extends Fragment {
         tvAnnouncementTitle = view.findViewById(R.id.tv_announcement_title);
         tvAnnouncementChampion = view.findViewById(R.id.tv_announcement_champion);
         recyclerMenu = view.findViewById(R.id.recycler_menu);
-        view.findViewById(R.id.ll_tutorial).setOnClickListener(v -> startActivity(new Intent(getContext(), DocumentActivity.class)));
+        progressBar = view.findViewById(R.id.progress_bar);
+        llTutorial = view.findViewById(R.id.ll_tutorial);
+        ivTutorialCover = view.findViewById(R.id.iv_tutorial_cover);
+        tvTutorialTitle = view.findViewById(R.id.tv_tutorial_title);
 
         loadBanners();
         loadAnnouncement();
         loadMenus();
+        loadTutorialEntry();
         startAutoScroll();
     }
 
-    private void loadBanners() {
-        banners = MockDataProvider.getBanners();
-        if (banners == null || banners.isEmpty()) {
-            bannerContainer.setVisibility(View.GONE);
-            return;
+    private void showLoading(boolean show) {
+        if (progressBar != null) {
+            progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         }
-        bannerContainer.setVisibility(View.VISIBLE);
-        bannerAdapter = new BannerAdapter(banners);
-        viewPagerBanner.setAdapter(bannerAdapter);
-        setupIndicator();
-        viewPagerBanner.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+    }
+
+    private void startRequest() {
+        pendingRequests++;
+        showLoading(true);
+    }
+
+    private void finishRequest() {
+        pendingRequests--;
+        if (pendingRequests <= 0) {
+            pendingRequests = 0;
+            showLoading(false);
+        }
+    }
+
+    private void loadBanners() {
+        startRequest();
+        apiService.getHomeBannerList().enqueue(new PageApiCallback<BatchHomeBannerDto>() {
             @Override
-            public void onPageSelected(int position) {
-                updateIndicator(position);
+            public void onSuccess(long total, List<BatchHomeBannerDto> rows) {
+                finishRequest();
+                banners = new ArrayList<>();
+                for (BatchHomeBannerDto dto : rows) {
+                    banners.add(new Banner(
+                            dto.getBannerId() != null ? String.valueOf(dto.getBannerId()) : "",
+                            dto.getImageUrl() != null ? dto.getImageUrl() : "",
+                            dto.getLinkUrl() != null ? dto.getLinkUrl() : "",
+                            dto.getSortWeight() != null ? dto.getSortWeight() : 0,
+                            dto.getTitle() != null ? dto.getTitle() : ""
+                    ));
+                }
+                if (banners.isEmpty()) {
+                    bannerContainer.setVisibility(View.GONE);
+                    return;
+                }
+                bannerContainer.setVisibility(View.VISIBLE);
+                bannerAdapter = new BannerAdapter(banners);
+                viewPagerBanner.setAdapter(bannerAdapter);
+                setupIndicator();
+                viewPagerBanner.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        updateIndicator(position);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String msg) {
+                finishRequest();
+                ToastUtil.show(getContext(), msg);
+                bannerContainer.setVisibility(View.GONE);
             }
         });
     }
@@ -114,30 +180,155 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadAnnouncement() {
-        Announcement a = MockDataProvider.getAnnouncement();
-        tvAnnouncementTitle.setText(a.title);
-        tvAnnouncementChampion.setText(String.format("%s - ¥%s", a.championName, a.amount));
+        startRequest();
+        apiService.getHomeNewsList().enqueue(new PageApiCallback<BatchHomeNewsDto>() {
+            @Override
+            public void onSuccess(long total, List<BatchHomeNewsDto> rows) {
+                finishRequest();
+                BatchHomeNewsDto dto = rows.isEmpty() ? null : rows.get(0);
+                if (dto == null) {
+                    tvAnnouncementTitle.setText("");
+                    tvAnnouncementChampion.setText("");
+                    return;
+                }
+                Announcement a = new Announcement(
+                        dto.getNewsTitle() != null ? dto.getNewsTitle() : "",
+                        dto.getChampionName() != null ? dto.getChampionName() : "",
+                        dto.getSalesAmount() != null ? String.valueOf(dto.getSalesAmount().intValue()) : "0"
+                );
+                tvAnnouncementTitle.setText(a.title);
+                tvAnnouncementChampion.setText(String.format("%s - ¥%s", a.championName, a.amount));
+            }
+
+            @Override
+            public void onError(String msg) {
+                finishRequest();
+                ToastUtil.show(getContext(), msg);
+            }
+        });
     }
 
     private void loadMenus() {
-        List<HomeMenu> menus = MockDataProvider.getHomeMenus();
-        recyclerMenu.setLayoutManager(new GridLayoutManager(getContext(), 4));
-        HomeMenuAdapter adapter = new HomeMenuAdapter(menus, (menu, position) -> {
-            switch (position) {
-                case 0:
-                    startActivity(new Intent(getContext(), LearningActivity.class));
-                    break;
-                case 1:
-                    startActivity(new Intent(getContext(), ContactActivity.class));
-                    break;
-                case 2:
-                    startActivity(new Intent(getContext(), BrandActivity.class));
-                    break;
-                default:
-                    ToastUtil.show(getContext(), R.string.coming_soon);
+        startRequest();
+        apiService.getHomeEntryList().enqueue(new PageApiCallback<BatchHomeEntryDto>() {
+            @Override
+            public void onSuccess(long total, List<BatchHomeEntryDto> rows) {
+                finishRequest();
+                List<HomeMenu> menus = new ArrayList<>();
+                for (BatchHomeEntryDto dto : rows) {
+                    String name = dto.getEntryName() != null ? dto.getEntryName() : "";
+                    menus.add(new HomeMenu(name, resolveDefaultIcon(name), dto.getIconUrl(), dto.getTargetType(), dto.getTargetValue()));
+                }
+                if (menus.isEmpty()) {
+                    recyclerMenu.setVisibility(View.GONE);
+                    return;
+                }
+                recyclerMenu.setVisibility(View.VISIBLE);
+                recyclerMenu.setLayoutManager(new GridLayoutManager(getContext(), 4));
+                HomeMenuAdapter adapter = new HomeMenuAdapter(menus, (menu, position) -> handleMenuClick(menu));
+                recyclerMenu.setAdapter(adapter);
+            }
+
+            @Override
+            public void onError(String msg) {
+                finishRequest();
+                ToastUtil.show(getContext(), msg);
             }
         });
-        recyclerMenu.setAdapter(adapter);
+    }
+
+    private void handleMenuClick(HomeMenu menu) {
+        String targetType = menu.getTargetType();
+        String targetValue = menu.getTargetValue() != null ? menu.getTargetValue() : "";
+        if ("2".equals(targetType)) {
+            openUrl(targetValue);
+            return;
+        }
+        if (!"1".equals(targetType)) {
+            ToastUtil.show(getContext(), R.string.coming_soon);
+            return;
+        }
+        Intent intent = null;
+        if (targetValue.contains("learning")) {
+            intent = new Intent(getContext(), LearningActivity.class);
+        } else if (targetValue.contains("contact")) {
+            intent = new Intent(getContext(), ContactActivity.class);
+        } else if (targetValue.contains("brand")) {
+            intent = new Intent(getContext(), BrandActivity.class);
+        } else if (targetValue.contains("document") || targetValue.contains("tutorial")) {
+            intent = new Intent(getContext(), DocumentActivity.class);
+        }
+        if (intent != null) {
+            startActivity(intent);
+        } else {
+            ToastUtil.show(getContext(), R.string.coming_soon);
+        }
+    }
+
+    private void openUrl(String url) {
+        if (url == null || url.isEmpty()) {
+            ToastUtil.show(getContext(), "链接为空");
+            return;
+        }
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        } catch (Exception e) {
+            ToastUtil.show(getContext(), "无法打开链接");
+        }
+    }
+
+    private void loadTutorialEntry() {
+        startRequest();
+        apiService.getHomeTutorialEntryList().enqueue(new PageApiCallback<BatchHomeTutorialEntryDto>() {
+            @Override
+            public void onSuccess(long total, List<BatchHomeTutorialEntryDto> rows) {
+                finishRequest();
+                if (rows == null || rows.isEmpty()) {
+                    llTutorial.setVisibility(View.GONE);
+                    return;
+                }
+                BatchHomeTutorialEntryDto dto = rows.get(0);
+                String title = dto.getTitle() != null ? dto.getTitle() : "";
+                String coverUrl = dto.getCoverUrl() != null ? dto.getCoverUrl() : "";
+                Long documentId = dto.getDocumentId();
+                tvTutorialTitle.setText(title);
+                if (!coverUrl.isEmpty()) {
+                    Glide.with(HomeFragment.this)
+                            .load(coverUrl)
+                            .placeholder(R.drawable.ic_learning)
+                            .error(R.drawable.ic_learning)
+                            .into(ivTutorialCover);
+                } else {
+                    ivTutorialCover.setImageResource(R.drawable.ic_learning);
+                }
+                llTutorial.setOnClickListener(v -> {
+                    if (documentId == null) {
+                        ToastUtil.show(getContext(), "未关联文档");
+                        return;
+                    }
+                    Intent intent = new Intent(getContext(), DocumentActivity.class);
+                    intent.putExtra(DocumentActivity.EXTRA_DOCUMENT_ID, documentId);
+                    startActivity(intent);
+                });
+                llTutorial.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onError(String msg) {
+                finishRequest();
+                llTutorial.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private int resolveDefaultIcon(String name) {
+        if (name == null) return R.drawable.ic_home;
+        if (name.contains("学习")) return R.drawable.ic_learning;
+        if (name.contains("信息") || name.contains("咨询")) return R.drawable.ic_contact;
+        if (name.contains("品牌")) return R.drawable.ic_brand;
+        if (name.contains("其他")) return R.drawable.ic_other_service;
+        return R.drawable.ic_home;
     }
 
     @Override

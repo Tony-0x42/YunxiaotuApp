@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,17 +19,30 @@ import com.example.cj.videoeditor.activity.EditProfileActivity;
 import com.example.cj.videoeditor.activity.LoginActivity;
 import com.example.cj.videoeditor.activity.PrivacyActivity;
 import com.example.cj.videoeditor.bean.User;
+import com.example.cj.videoeditor.network.ApiCallback;
+import com.example.cj.videoeditor.network.ApiService;
+import com.example.cj.videoeditor.network.dto.BatchCustomerDto;
+import com.example.cj.videoeditor.network.util.TokenManager;
 import com.example.cj.videoeditor.utils.AppConfig;
-import com.example.cj.videoeditor.utils.MockDataProvider;
 import com.example.cj.videoeditor.utils.PhoneUtil;
 import com.example.cj.videoeditor.utils.SharedPrefUtil;
 import com.example.cj.videoeditor.utils.ToastUtil;
+import com.example.cj.videoeditor.utils.UserStore;
 import java.io.File;
+import javax.inject.Inject;
+import dagger.hilt.android.AndroidEntryPoint;
 
+@AndroidEntryPoint
 public class ProfileFragment extends Fragment {
+
+    @Inject
+    ApiService apiService;
+    @Inject
+    TokenManager tokenManager;
 
     private TextView tvName, tvPhone, tvVipExpire;
     private Button btnLogout;
+    private ProgressBar progressBar;
 
     @Nullable
     @Override
@@ -43,6 +57,7 @@ public class ProfileFragment extends Fragment {
         tvPhone = view.findViewById(R.id.tv_phone);
         tvVipExpire = view.findViewById(R.id.tv_vip_expire);
         btnLogout = view.findViewById(R.id.btn_logout);
+        progressBar = view.findViewById(R.id.progress_bar);
 
         View header = view.findViewById(R.id.header);
         header.setOnClickListener(v -> startActivity(new Intent(getContext(), EditProfileActivity.class)));
@@ -71,19 +86,38 @@ public class ProfileFragment extends Fragment {
 
     private void loadUser() {
         String phone = SharedPrefUtil.getString(requireContext(), AppConfig.SP_KEY_USER_PHONE, "");
+        if (phone.isEmpty()) {
+            renderUserFromSp();
+            return;
+        }
+        showLoading(true);
+        apiService.getAppCustomer(phone).enqueue(new ApiCallback<BatchCustomerDto>() {
+            @Override
+            public void onSuccess(BatchCustomerDto data) {
+                showLoading(false);
+                if (data != null) {
+                    UserStore.saveCustomerDto(requireContext(), data);
+                }
+                renderUserFromSp();
+            }
+
+            @Override
+            public void onError(String msg) {
+                showLoading(false);
+                ToastUtil.show(getContext(), msg);
+                renderUserFromSp();
+            }
+        });
+    }
+
+    private void renderUserFromSp() {
+        String phone = SharedPrefUtil.getString(requireContext(), AppConfig.SP_KEY_USER_PHONE, "");
         String name = SharedPrefUtil.getString(requireContext(), AppConfig.SP_KEY_USER_NAME, "");
         boolean vip = SharedPrefUtil.getBoolean(requireContext(), AppConfig.SP_KEY_USER_VIP, false);
         String expire = SharedPrefUtil.getString(requireContext(), AppConfig.SP_KEY_USER_VIP_EXPIRE, "");
-        if (phone.isEmpty()) {
-            User mock = MockDataProvider.getUser();
-            phone = mock.getPhone();
-            name = mock.getName();
-            vip = mock.isVip();
-            expire = mock.getVipExpire();
-        }
-        tvName.setText(name);
-        tvPhone.setText(PhoneUtil.maskPhone(phone));
-        tvVipExpire.setText(vip ? getString(R.string.vip_expire_format, expire) : "");
+        tvName.setText(name.isEmpty() ? getString(R.string.nickname) : name);
+        tvPhone.setText(phone.isEmpty() ? "" : PhoneUtil.maskPhone(phone));
+        tvVipExpire.setText(vip && !expire.isEmpty() ? getString(R.string.vip_expire_format, expire) : "");
     }
 
     private void setupMenu(View root, int menuId, String title, String value, View.OnClickListener listener) {
@@ -101,26 +135,45 @@ public class ProfileFragment extends Fragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.confirm_logout)
                 .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                    SharedPrefUtil.clear(requireContext());
-                    Intent intent = new Intent(getContext(), LoginActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
+                    showLoading(true);
+                    apiService.appLogout().enqueue(new ApiCallback<Object>() {
+                        @Override
+                        public void onSuccess(Object data) {
+                            doLocalLogout();
+                        }
+
+                        @Override
+                        public void onError(String msg) {
+                            ToastUtil.show(getContext(), msg);
+                            doLocalLogout();
+                        }
+                    });
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 
+    private void doLocalLogout() {
+        showLoading(false);
+        tokenManager.clearToken();
+        SharedPrefUtil.clear(requireContext());
+        Intent intent = new Intent(getContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
     private void confirmDeleteAccount() {
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.confirm_delete_account)
-                .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                    SharedPrefUtil.clear(requireContext());
-                    Intent intent = new Intent(getContext(), LoginActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                })
+                .setPositiveButton(R.string.confirm, (dialog, which) -> doLocalLogout())
                 .setNegativeButton(R.string.cancel, null)
                 .show();
+    }
+
+    private void showLoading(boolean show) {
+        if (progressBar != null) {
+            progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 
     private String getCacheSize() {

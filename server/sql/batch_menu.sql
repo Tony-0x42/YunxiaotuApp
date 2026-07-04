@@ -17,6 +17,8 @@ insert into sys_menu values('3005', '教程管理',     '3000', '5', 'tutorial',
 insert into sys_menu values('3006', '文档管理',     '3000', '6', 'document',   'batch/document/index',    '', '', 1, 0, 'C', '0', '0', 'batch:document:list',    'el-icon-document',   'admin', sysdate(), '', null, '文档管理菜单');
 insert into sys_menu values('3007', '数据统计',     '3000', '7', 'statistics', 'batch/statistics/index',  '', '', 1, 0, 'C', '0', '0', 'batch:statistics:list',  'el-icon-data-line',  'admin', sysdate(), '', null, '数据统计菜单');
 insert into sys_menu values('3008', '系统配置',     '3000', '8', 'config',     'batch/config/index',      '', '', 1, 0, 'C', '0', '0', 'batch:config:list',      'el-icon-setting',    'admin', sysdate(), '', null, '系统配置菜单');
+insert into sys_menu values('3009', '品牌专区管理', '3000', '9', 'brand',      'batch/brand/index',       '', '', 1, 0, 'C', '0', '0', 'batch:brand:list',       'el-icon-office-building', 'admin', sysdate(), '', null, '品牌专区管理菜单');
+insert into sys_menu values('3010', '联系方式管理', '3000', '10', 'contact',   'batch/contact/index',     '', '', 1, 0, 'C', '0', '0', 'batch:contact:list',     'el-icon-phone',      'admin', sysdate(), '', null, '联系方式管理菜单');
 
 -- ----------------------------
 -- 按钮权限
@@ -76,3 +78,15 @@ insert into sys_menu values('3171', '配置新增', '3008', '2', '', '', '', '',
 insert into sys_menu values('3172', '配置修改', '3008', '3', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:config:edit',    '#', 'admin', sysdate(), '', null, '');
 insert into sys_menu values('3173', '配置删除', '3008', '4', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:config:remove',  '#', 'admin', sysdate(), '', null, '');
 insert into sys_menu values('3174', '配置导出', '3008', '5', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:config:export',  '#', 'admin', sysdate(), '', null, '');
+
+-- 品牌专区管理按钮权限
+insert into sys_menu values('3175', '品牌专区查询', '3009', '1', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:brand:query',  '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('3176', '品牌专区新增', '3009', '2', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:brand:add',    '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('3177', '品牌专区修改', '3009', '3', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:brand:edit',   '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('3178', '品牌专区删除', '3009', '4', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:brand:remove', '#', 'admin', sysdate(), '', null, '');
+
+-- 联系方式管理按钮权限
+insert into sys_menu values('3179', '联系方式查询', '3010', '1', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:contact:query',  '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('3180', '联系方式新增', '3010', '2', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:contact:add',    '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('3181', '联系方式修改', '3010', '3', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:contact:edit',   '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('3182', '联系方式删除', '3010', '4', '', '', '', '', 1, 0, 'F', '0', '0', 'batch:contact:remove', '#', 'admin', sysdate(), '', null, '');

@@ -36,7 +36,7 @@ public class BatchHomeNewsController extends BaseController
     /**
      * 查询首页喜报数据列表
      */
-    @PreAuthorize("@ss.hasPermi('batch:home:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:home:list') or @ss.hasPermi('app:user')")
     @GetMapping("/list")
     public TableDataInfo list(BatchHomeNews news)
     {

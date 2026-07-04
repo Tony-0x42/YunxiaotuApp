@@ -66,7 +66,7 @@ public class BatchConfigController extends BaseController
     /**
      * 查询品牌配置
      */
-    @PreAuthorize("@ss.hasPermi('batch:config:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:config:list') or @ss.hasPermi('app:user')")
     @GetMapping("/brand")
     public AjaxResult getBrandConfig()
     {
@@ -101,7 +101,7 @@ public class BatchConfigController extends BaseController
     /**
      * 查询全局参数
      */
-    @PreAuthorize("@ss.hasPermi('batch:config:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:config:list') or @ss.hasPermi('app:user')")
     @GetMapping("/global")
     public AjaxResult getGlobalConfig()
     {

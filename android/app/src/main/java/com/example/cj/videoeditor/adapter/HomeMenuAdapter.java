@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.cj.videoeditor.R;
 import com.example.cj.videoeditor.bean.HomeMenu;
 import java.util.List;
@@ -35,7 +36,17 @@ public class HomeMenuAdapter extends RecyclerView.Adapter<HomeMenuAdapter.VH> {
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
         HomeMenu item = data.get(position);
-        holder.ivIcon.setImageResource(item.getIconRes());
+        if (item.getIconUrl() != null && !item.getIconUrl().isEmpty()) {
+            Glide.with(holder.ivIcon.getContext())
+                    .load(item.getIconUrl())
+                    .placeholder(item.getIconRes() != 0 ? item.getIconRes() : R.drawable.ic_home)
+                    .error(item.getIconRes() != 0 ? item.getIconRes() : R.drawable.ic_home)
+                    .into(holder.ivIcon);
+        } else if (item.getIconRes() != 0) {
+            holder.ivIcon.setImageResource(item.getIconRes());
+        } else {
+            holder.ivIcon.setImageResource(R.drawable.ic_home);
+        }
         holder.tvName.setText(item.getName());
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onMenuClick(item, holder.getAdapterPosition());

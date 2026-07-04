@@ -42,7 +42,7 @@ public class BatchTutorialController extends BaseController
     /**
      * 获取教程列表
      */
-    @PreAuthorize("@ss.hasPermi('batch:tutorial:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:tutorial:list') or @ss.hasPermi('app:user')")
     @GetMapping("/list")
     public TableDataInfo list(BatchTutorial tutorial)
     {
@@ -67,7 +67,7 @@ public class BatchTutorialController extends BaseController
     /**
      * 根据教程编号获取详细信息
      */
-    @PreAuthorize("@ss.hasPermi('batch:tutorial:query')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:tutorial:query') or @ss.hasPermi('app:user')")
     @GetMapping(value = "/{tutorialId}")
     public AjaxResult getInfo(@PathVariable Long tutorialId)
     {
@@ -137,7 +137,7 @@ public class BatchTutorialController extends BaseController
     /**
      * 获取所有有效分类
      */
-    @PreAuthorize("@ss.hasPermi('batch:tutorial:list')")
+    @PreAuthorize("isAnonymous() or @ss.hasPermi('batch:tutorial:list') or @ss.hasPermi('app:user')")
     @GetMapping("/category/all")
     public AjaxResult categoryAll()
     {
