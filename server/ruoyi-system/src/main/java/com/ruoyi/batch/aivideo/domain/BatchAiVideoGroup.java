@@ -35,6 +35,9 @@ public class BatchAiVideoGroup
     /** 状态：0 启用 / 1 禁用 */
     private Integer status;
 
+    /** 排序权重 */
+    private Integer sortWeight;
+
     /** 删除标志：0 存在 / 2 删除 */
     private Integer delFlag;
 
@@ -109,6 +112,16 @@ public class BatchAiVideoGroup
         this.status = status;
     }
 
+    public Integer getSortWeight()
+    {
+        return sortWeight;
+    }
+
+    public void setSortWeight(Integer sortWeight)
+    {
+        this.sortWeight = sortWeight;
+    }
+
     public Integer getDelFlag()
     {
         return delFlag;
@@ -159,6 +172,7 @@ public class BatchAiVideoGroup
             .append("generatedCount", getGeneratedCount())
             .append("maxLimit", getMaxLimit())
             .append("status", getStatus())
+            .append("sortWeight", getSortWeight())
             .append("delFlag", getDelFlag())
             .append("createTime", getCreateTime())
             .append("updateTime", getUpdateTime())
