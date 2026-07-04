@@ -553,7 +553,7 @@
           <span class="flex-1 text-center font-medium">产品宣传片组A</span>
           <span class="text-primary text-sm cursor-pointer">保存</span>
         </div>
-        <div class="flex-1 overflow-y-auto hide-scrollbar pb-24">
+        <div class="flex-1 overflow-y-auto hide-scrollbar pb-4">
           <div class="bg-black h-48 flex items-center justify-center">
             <div class="text-center text-white">
               <span class="text-4xl">▶️</span>
@@ -575,21 +575,16 @@
             </label>
           </div>
           <div class="p-4">
-            <h4 class="font-medium text-gray-800 mb-3">分镜头素材</h4>
-            <div class="grid grid-cols-3 gap-3">
-              <div class="bg-gray-800 rounded-lg aspect-[9/16] flex items-center justify-center relative">
-                <span class="absolute top-1 left-1 text-white text-xs bg-black/50 px-1.5 rounded">1</span>
-                <span class="text-white text-xs">镜头1</span>
-                <span class="absolute top-1 right-1 text-white text-xs cursor-pointer">×</span>
-              </div>
-              <div class="bg-gray-800 rounded-lg aspect-[9/16] flex items-center justify-center relative">
-                <span class="absolute top-1 left-1 text-white text-xs bg-black/50 px-1.5 rounded">2</span>
-                <span class="text-white text-xs">镜头2</span>
-                <span class="absolute top-1 right-1 text-white text-xs cursor-pointer">×</span>
-              </div>
-              <div class="border-2 border-dashed border-gray-300 rounded-lg aspect-[9/16] flex items-center justify-center cursor-pointer">
-                <span class="text-gray-400 text-2xl">+</span>
-              </div>
+            <div class="flex justify-between items-center mb-3">
+              <h4 class="font-medium text-gray-800">分镜头素材</h4>
+              <span class="text-xs text-gray-500">配置来源：管理后台</span>
+            </div>
+            <div id="shotListContainer" class="space-y-3">
+              <!-- 分镜头由 JS 根据后台配置动态渲染 -->
+            </div>
+            <div class="mt-3 p-3 bg-primaryBg rounded-xl mb-6">
+              <p class="text-xs text-primary">分镜头总数上限：<span id="shotCountLimit">50</span> 个</p>
+              <p class="text-xs text-primary mt-1">每个镜头素材上限：<span id="materialCountLimit">5</span> 个</p>
             </div>
           </div>
           <div class="bg-white mx-4 rounded-xl p-4 shadow-sm mb-3">
@@ -607,9 +602,9 @@
               <button class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm">提取原声</button>
             </div>
           </div>
-        </div>
-        <div class="absolute bottom-16 left-0 right-0 px-4 pb-2 bg-gradient-to-t from-gray-50 to-transparent">
-          <button onclick="showToast('AI生成任务已提交，消耗算力 10 GF')" class="w-full bg-primary text-white py-3 rounded-xl font-medium">AI 生成</button>
+          <div class="mx-4 mt-2 mb-4">
+            <button onclick="showToast('AI生成任务已提交，消耗算力 10 GF')" class="w-full bg-primary text-white py-3 rounded-xl font-medium">AI 生成</button>
+          </div>
         </div>
       </div>
 
@@ -1580,13 +1575,15 @@
         <div id="admin-system" class="admin-content">
           <div class="bg-white rounded-xl shadow-sm p-6">
             <h2 class="text-xl font-bold text-gray-800 mb-6">系统配置</h2>
-            <div class="flex border-b border-gray-200 mb-6">
-              <div class="px-4 py-2 tab-active cursor-pointer text-sm font-medium">品牌配置</div>
-              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">版本管理</div>
-              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">全局参数</div>
-              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">日志管理</div>
+            <div class="flex border-b border-gray-200 mb-6" id="systemConfigTabs">
+              <div class="px-4 py-2 tab-active cursor-pointer text-sm font-medium" onclick="switchSystemTab('brand')">品牌配置</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium" onclick="switchSystemTab('version')">版本管理</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium" onclick="switchSystemTab('global')">全局参数</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium" onclick="switchSystemTab('log')">日志管理</div>
             </div>
-            <div class="max-w-2xl space-y-6">
+
+            <!-- 品牌配置 -->
+            <div id="system-tab-brand" class="system-tab-content max-w-2xl space-y-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">APP Logo</label>
                 <div class="w-24 h-24 bg-primary rounded-xl flex items-center justify-center text-white text-2xl font-bold">云</div>
@@ -1613,8 +1610,112 @@
                 </div>
               </div>
               <div class="pt-4">
-                <button onclick="showToast('配置保存成功')" class="bg-primary text-white px-6 py-2 rounded-lg text-sm">保存配置</button>
+                <button onclick="showToast('品牌配置保存成功')" class="bg-primary text-white px-6 py-2 rounded-lg text-sm">保存配置</button>
               </div>
+            </div>
+
+            <!-- 版本管理 -->
+            <div id="system-tab-version" class="system-tab-content hidden">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-gray-800">APP 版本列表</h3>
+                <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">+ 新增版本</button>
+              </div>
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">版本号</th>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">平台</th>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">更新类型</th>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">状态</th>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">操作</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr>
+                    <td class="px-4 py-3">v1.2.0</td>
+                    <td class="px-4 py-3">Android</td>
+                    <td class="px-4 py-3">提示更新</td>
+                    <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">上架</span></td>
+                    <td class="px-4 py-3"><button class="text-primary text-sm mr-2">编辑</button><button class="text-red-500 text-sm">删除</button></td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">v1.2.0</td>
+                    <td class="px-4 py-3">iOS</td>
+                    <td class="px-4 py-3">提示更新</td>
+                    <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">上架</span></td>
+                    <td class="px-4 py-3"><button class="text-primary text-sm mr-2">编辑</button><button class="text-red-500 text-sm">删除</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 全局参数 -->
+            <div id="system-tab-global" class="system-tab-content hidden max-w-2xl space-y-6">
+              <div class="bg-blue-50 rounded-xl p-4 mb-4">
+                <h3 class="font-bold text-primary text-sm mb-1">AI 云创分镜头配置</h3>
+                <p class="text-xs text-gray-600">以下参数将下发至 APP 端，决定每个视频组的分镜头数量及每个镜头中的素材容量。</p>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">分镜头总数量上限 <span class="text-red-500">*</span></label>
+                  <input type="number" id="configShotCount" value="50" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                  <p class="text-xs text-gray-500 mt-1">单个视频组最多可创建的分镜头数量</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">每个镜头素材上限 <span class="text-red-500">*</span></label>
+                  <input type="number" id="configMaterialsPerShot" value="5" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                  <p class="text-xs text-gray-500 mt-1">每个分镜头中允许上传的素材数量</p>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">AI 云创单次选择视频上限</label>
+                <input type="number" value="10" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">切片时长最小值 (s)</label>
+                  <input type="number" value="0.5" step="0.1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">切片时长最大值 (s)</label>
+                  <input type="number" value="10" step="0.1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">切片时长步长 (s)</label>
+                <input type="number" value="0.1" step="0.1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+              </div>
+              <div class="pt-4">
+                <button onclick="saveGlobalConfig()" class="bg-primary text-white px-6 py-2 rounded-lg text-sm">保存全局参数</button>
+              </div>
+            </div>
+
+            <!-- 日志管理 -->
+            <div id="system-tab-log" class="system-tab-content hidden">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">操作人</th>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">操作时间</th>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">操作模块</th>
+                    <th class="px-4 py-3 text-left text-gray-600 font-medium">操作内容</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr>
+                    <td class="px-4 py-3">管理员</td>
+                    <td class="px-4 py-3">2026-07-04 10:23</td>
+                    <td class="px-4 py-3">客户管理</td>
+                    <td class="px-4 py-3">新增账号 13800001003</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">管理员</td>
+                    <td class="px-4 py-3">2026-07-04 09:15</td>
+                    <td class="px-4 py-3">系统配置</td>
+                    <td class="px-4 py-3">修改分镜头总数量上限为 50</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1698,6 +1799,10 @@
       currentAppPage = pageId;
       updateAppTabBar(pageId);
       window.scrollTo(0, 0);
+      // 进入 AI 云创编辑页时，从管理后台拉取分镜头配置并渲染
+      if (pageId === 'page-aicloud-edit') {
+        setTimeout(renderShots, 0);
+      }
     }
 
     function goBack() {
@@ -1772,11 +1877,100 @@
       navigateTo('page-home');
     }
 
+    // 模拟从管理后台获取分镜头配置
+    function fetchShotConfigFromAdmin() {
+      // 实际项目中此处应调用管理后台接口：GET /api/admin/ai-cloud/shot-config
+      // 客户端读取管理后台配置后，按配置渲染分镜头列表
+      const shotCountEl = document.getElementById('configShotCount');
+      const materialsPerShotEl = document.getElementById('configMaterialsPerShot');
+      const shotCount = shotCountEl ? (parseInt(shotCountEl.value) || 50) : 50;
+      const materialsPerShot = materialsPerShotEl ? (parseInt(materialsPerShotEl.value) || 5) : 5;
+      return {
+        shotCount: shotCount,          // 分镜头总数量上限（管理后台可配置）
+        materialsPerShot: materialsPerShot,    // 每个镜头中的素材数量上限（管理后台可配置）
+        currentShots: [
+          { id: 1, materials: 2, mirrored: false },
+          { id: 2, materials: 1, mirrored: true },
+          { id: 3, materials: 0, mirrored: false }
+        ]
+      };
+    }
+
+    function renderShots() {
+      const config = fetchShotConfigFromAdmin();
+      const container = document.getElementById('shotListContainer');
+      const limitEl = document.getElementById('shotCountLimit');
+      const matLimitEl = document.getElementById('materialCountLimit');
+      if (!container) return;
+      if (limitEl) limitEl.innerText = config.shotCount;
+      if (matLimitEl) matLimitEl.innerText = config.materialsPerShot;
+
+      let html = '';
+      config.currentShots.forEach((shot, index) => {
+        html += `
+          <div class="bg-white rounded-xl p-3 shadow-sm flex gap-3 items-center">
+            <div class="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center text-white text-xs relative flex-shrink-0">
+              <span class="absolute top-1 left-1 bg-black/50 px-1 rounded text-[10px]">${shot.id}</span>
+              <span>镜头${shot.id}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-sm font-medium text-gray-800">分镜头 ${shot.id}</span>
+                <span class="text-xs text-gray-500">素材 ${shot.materials}/${config.materialsPerShot}</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                <div class="bg-primary h-1.5 rounded-full" style="width: ${(shot.materials / config.materialsPerShot) * 100}%"></div>
+              </div>
+              <div class="flex gap-2">
+                <button class="text-xs bg-primaryBg text-primary px-2 py-1 rounded">上传</button>
+                <button class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded" onclick="showToast('${shot.mirrored ? '已恢复' : '已镜像'}')">${shot.mirrored ? '恢复' : '镜像'}</button>
+                <button class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">排序</button>
+                <button class="text-xs text-red-500 px-2 py-1 rounded ml-auto" onclick="showConfirm('确定删除该分镜头吗？')">删除</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // 添加新增镜头入口（未达上限时）
+      if (config.currentShots.length < config.shotCount) {
+        html += `
+          <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 flex items-center justify-center cursor-pointer" onclick="showToast('新增分镜头')">
+            <span class="text-gray-400 text-sm">+ 新增分镜头</span>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
     function doAdminLogin() {
       document.getElementById('page-admin-login').classList.remove('active');
       document.getElementById('adminLayout').classList.add('active');
       switchAdminPage('admin-dashboard');
       showToast('登录成功');
+    }
+
+    // 系统配置 Tab 切换
+    function switchSystemTab(tabName) {
+      document.querySelectorAll('#systemConfigTabs > div').forEach((tab, i) => {
+        const names = ['brand', 'version', 'global', 'log'];
+        if (names[i] === tabName) {
+          tab.classList.remove('tab-inactive');
+          tab.classList.add('tab-active');
+        } else {
+          tab.classList.remove('tab-active');
+          tab.classList.add('tab-inactive');
+        }
+      });
+      document.querySelectorAll('.system-tab-content').forEach(c => c.classList.add('hidden'));
+      document.getElementById('system-tab-' + tabName).classList.remove('hidden');
+    }
+
+    // 保存全局参数（分镜头配置等）
+    function saveGlobalConfig() {
+      const shotCount = document.getElementById('configShotCount').value;
+      const materialsPerShot = document.getElementById('configMaterialsPerShot').value;
+      showToast(`全局参数已保存：分镜头上限 ${shotCount}，每镜头素材上限 ${materialsPerShot}`);
     }
 
     // 后台页面切换
