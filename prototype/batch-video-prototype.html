@@ -780,79 +780,19 @@
       </div>
 
       <!-- AI 视频分割进度 -->
-      <div id="page-aicloud-progress" class="page bg-gray-50">
-        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+      <div id="page-aicloud-progress" class="page bg-white">
+        <div class="h-12 flex items-center px-4 border-b border-gray-100">
           <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
           <span class="flex-1 text-center font-medium">视频分割中</span>
           <span class="w-6"></span>
         </div>
-        <div class="flex-1 overflow-y-auto hide-scrollbar p-4 pb-20">
-          <!-- 总进度 -->
-          <div class="bg-white rounded-2xl p-4 shadow-sm mb-4">
-            <div class="flex justify-between items-center mb-2">
-              <div class="flex items-center gap-2">
-                <div class="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
-                <span class="text-sm font-medium text-gray-700">总进度</span>
-              </div>
-              <span class="text-lg font-bold text-primary">65%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div class="bg-primary h-2 rounded-full transition-all duration-500" style="width: 65%"></div>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">正在处理第 3 个分镜，共 5 个分镜 · 切片时长 2.5s</p>
-          </div>
-
-          <!-- 分镜进度列表 -->
-          <div class="space-y-3">
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-800">分镜 1</span>
-                <span class="text-xs text-green-600">已完成</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-1.5">
-                <div class="bg-green-500 h-1.5 rounded-full" style="width: 100%"></div>
-              </div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-800">分镜 2</span>
-                <span class="text-xs text-green-600">已完成</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-1.5">
-                <div class="bg-green-500 h-1.5 rounded-full" style="width: 100%"></div>
-              </div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-800">分镜 3</span>
-                <span class="text-xs text-primary">处理中 45%</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-1.5">
-                <div class="bg-primary h-1.5 rounded-full transition-all duration-500" style="width: 45%"></div>
-              </div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-800">分镜 4</span>
-                <span class="text-xs text-gray-400">待处理</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-1.5">
-                <div class="bg-gray-300 h-1.5 rounded-full" style="width: 0%"></div>
-              </div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-800">分镜 5</span>
-                <span class="text-xs text-gray-400">待处理</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-1.5">
-                <div class="bg-gray-300 h-1.5 rounded-full" style="width: 0%"></div>
-              </div>
-            </div>
-          </div>
-
-          <p class="text-xs text-gray-500 text-center mt-6">切分完成后将自动返回编辑页<br>您可以将 APP 切换至后台</p>
-          <button onclick="goBack()" class="mt-4 w-full text-primary text-sm py-3 bg-white rounded-xl shadow-sm">返回编辑页</button>
+        <div class="flex-1 flex flex-col items-center justify-center px-8">
+          <div class="w-24 h-24 rounded-full border-4 border-primary border-t-transparent animate-spin mb-6"></div>
+          <p class="text-2xl font-bold text-primary mb-2" id="splitProgressText">0%</p>
+          <p class="text-gray-600 text-sm mb-1" id="splitProgressStatus">正在初始化...</p>
+          <p class="text-gray-400 text-xs mb-8" id="splitProgressDetail">切片时长：<span id="splitProgressDuration">2.5s</span></p>
+          <p class="text-xs text-gray-500 text-center">切分完成后将自动返回编辑页<br>您可以将 APP 切换至后台</p>
+          <button onclick="goBack()" class="mt-8 text-primary text-sm">返回编辑页</button>
         </div>
       </div>
 
@@ -873,16 +813,16 @@
             <h4 class="font-medium text-gray-800 text-sm mb-4">切片时长设置</h4>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs text-gray-500">当前时长</span>
-              <span class="text-sm font-bold text-primary">2.5s</span>
+              <span class="text-sm font-bold text-primary" id="splitDurationValue">2.5s</span>
             </div>
-            <input type="range" min="0.5" max="10" step="0.1" value="2.5" class="w-full accent-primary mb-3">
+            <input type="range" id="splitDuration" min="0.5" max="10" step="0.1" value="2.5" class="w-full accent-primary mb-3" oninput="document.getElementById('splitDurationValue').innerText = this.value + 's'">
             <div class="flex justify-between text-xs text-gray-400">
               <span>0.5s</span>
               <span>10s</span>
             </div>
-            <p class="text-xs text-gray-400 mt-3">由管理后台统一配置，范围 0.5~10s，步长 0.1s</p>
+            <p class="text-xs text-gray-400 mt-3">用户自行设置切片时长，范围 0.5~10s，步长 0.1s</p>
           </div>
-          <button onclick="showToast('开始分割'); navigateTo('page-aicloud-progress')" class="w-full bg-primary text-white py-3 rounded-xl font-medium">开始分割</button>
+          <button onclick="startSplit()" class="w-full bg-primary text-white py-3 rounded-xl font-medium">开始分割</button>
         </div>
       </div>
 
@@ -2285,6 +2225,42 @@
     let currentAppPage = 'page-app-login';
     let bannerIndex = 0;
 
+    // 分镜头数据（模拟本地状态，AI 分割后会追加）
+    let appShots = [
+      {
+        id: 1,
+        mirrored: false,
+        materials: [
+          { id: 101, duration: '2.02' },
+          { id: 102, duration: '2.02' },
+          { id: 103, duration: '2.02' },
+          { id: 104, duration: '2.02' },
+          { id: 105, duration: '2.02' }
+        ]
+      },
+      {
+        id: 2,
+        mirrored: false,
+        materials: [
+          { id: 201, duration: '2.00' },
+          { id: 202, duration: '2.00' },
+          { id: 203, duration: '2.00' }
+        ]
+      },
+      {
+        id: 3,
+        mirrored: false,
+        materials: [
+          { id: 301, duration: '2.00' },
+          { id: 302, duration: '2.00' }
+        ]
+      }
+    ];
+
+    // AI 视频分割 pending 状态
+    let pendingSplitSegments = 0;
+    let splitDurationValue = '2.5';
+
     // 侧边目录切换
     function toggleNavPanel() {
       const panel = document.getElementById('navPanel');
@@ -2343,6 +2319,10 @@
       // 进入 AI 云创编辑页时，从管理后台拉取分镜头配置并渲染
       if (pageId === 'page-aicloud-edit') {
         setTimeout(renderShots, 0);
+      }
+      // 进入 AI 视频分割进度页时，开始模拟分割进度
+      if (pageId === 'page-aicloud-progress') {
+        setTimeout(simulateSplitProgress, 100);
       }
     }
 
@@ -2431,36 +2411,7 @@
         materialsPerShot: materialsPerShot,    // 每个镜头中的素材数量上限（管理后台可配置）
         generated: 0,
         totalToGenerate: 8364,
-        currentShots: [
-          {
-            id: 1,
-            mirrored: false,
-            materials: [
-              { id: 101, duration: '2.02' },
-              { id: 102, duration: '2.02' },
-              { id: 103, duration: '2.02' },
-              { id: 104, duration: '2.02' },
-              { id: 105, duration: '2.02' }
-            ]
-          },
-          {
-            id: 2,
-            mirrored: false,
-            materials: [
-              { id: 201, duration: '2.00' },
-              { id: 202, duration: '2.00' },
-              { id: 203, duration: '2.00' }
-            ]
-          },
-          {
-            id: 3,
-            mirrored: false,
-            materials: [
-              { id: 301, duration: '2.00' },
-              { id: 302, duration: '2.00' }
-            ]
-          }
-        ]
+        currentShots: appShots
       };
     }
 
@@ -2542,6 +2493,81 @@
         `;
       }
       container.innerHTML = html;
+    }
+
+    // 开始 AI 视频分割
+    function startSplit() {
+      const durationInput = document.getElementById('splitDuration');
+      splitDurationValue = durationInput ? durationInput.value : '2.5';
+      // 原型中模拟生成 5 个片段；真实场景应根据视频总时长 / 切片时长计算
+      pendingSplitSegments = 5;
+      const durationEl = document.getElementById('splitProgressDuration');
+      if (durationEl) durationEl.innerText = splitDurationValue + 's';
+      showToast('开始分割');
+      navigateTo('page-aicloud-progress');
+    }
+
+    // 模拟 AI 视频分割进度，完成后自动返回编辑页并插入分镜
+    function simulateSplitProgress() {
+      const textEl = document.getElementById('splitProgressText');
+      const statusEl = document.getElementById('splitProgressStatus');
+      if (!textEl) return;
+
+      textEl.innerText = '0%';
+      statusEl.innerText = '正在初始化...';
+      let progress = 0;
+
+      const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 15) + 8;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          textEl.innerText = '100%';
+          statusEl.innerText = '分割完成，正在返回编辑页...';
+          setTimeout(() => {
+            insertSplitShots();
+            navigateTo('page-aicloud-edit');
+          }, 600);
+        } else {
+          textEl.innerText = progress + '%';
+          const segmentIdx = Math.min(Math.floor(progress / (100 / pendingSplitSegments)) + 1, pendingSplitSegments);
+          statusEl.innerText = `正在分割第 ${segmentIdx}/${pendingSplitSegments} 个片段...`;
+        }
+      }, 250);
+    }
+
+    // 将切割后的视频片段按顺序插入为新的分镜头，校验管理后台设置的分镜上限
+    function insertSplitShots() {
+      if (pendingSplitSegments <= 0) return;
+      const config = fetchShotConfigFromAdmin();
+      const maxShots = config.shotCount;
+      const currentCount = appShots.length;
+      const canAdd = Math.min(pendingSplitSegments, maxShots - currentCount);
+
+      if (canAdd <= 0) {
+        showToast('分镜头数量已达上限，超出部分未创建');
+        pendingSplitSegments = 0;
+        return;
+      }
+
+      const maxId = appShots.length > 0 ? Math.max(...appShots.map(s => s.id)) : 0;
+      for (let i = 0; i < canAdd; i++) {
+        const newId = maxId + i + 1;
+        appShots.push({
+          id: newId,
+          mirrored: false,
+          materials: [
+            { id: newId * 100 + 1, duration: splitDurationValue }
+          ]
+        });
+      }
+
+      if (canAdd < pendingSplitSegments) {
+        showToast(`已创建 ${canAdd} 个分镜，超出上限的 ${pendingSplitSegments - canAdd} 个未创建`);
+      } else {
+        showToast(`成功创建 ${canAdd} 个分镜`);
+      }
+      pendingSplitSegments = 0;
     }
 
     function doAdminLogin() {
