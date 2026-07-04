@@ -1,6 +1,7 @@
 package com.example.cj.videoeditor.ui.watermark;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,8 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.VideoView;
+
+import com.example.cj.videoeditor.activity.WatermarkHistoryActivity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,6 +51,7 @@ public class WatermarkFragment extends Fragment {
 
     private EditText etLink;
     private Button btnParse, btnClear, btnSave;
+    private TextView btnHistory;
     private ProgressBar progressBar;
     private LinearLayout resultContainer;
     private TextView tabVideo, tabImage, tabText;
@@ -72,6 +76,7 @@ public class WatermarkFragment extends Fragment {
         btnParse = view.findViewById(R.id.btn_parse);
         btnClear = view.findViewById(R.id.btn_clear);
         btnSave = view.findViewById(R.id.btn_save);
+        btnHistory = view.findViewById(R.id.btn_history);
         progressBar = view.findViewById(R.id.progress_bar);
         resultContainer = view.findViewById(R.id.result_container);
         tabVideo = view.findViewById(R.id.tab_video);
@@ -85,6 +90,10 @@ public class WatermarkFragment extends Fragment {
 
         btnClear.setOnClickListener(v -> etLink.setText(""));
         btnParse.setOnClickListener(v -> parse());
+        btnHistory.setOnClickListener(v -> {
+            hideKeyboard();
+            startActivity(new Intent(requireContext(), WatermarkHistoryActivity.class));
+        });
         btnSave.setOnClickListener(v -> {
             hideKeyboard();
             save();

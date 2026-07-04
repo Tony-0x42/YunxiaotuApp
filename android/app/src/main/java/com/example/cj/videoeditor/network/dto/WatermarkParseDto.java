@@ -39,6 +39,9 @@ public class WatermarkParseDto {
     @SerializedName("failReason")
     private String failReason;
 
+    @SerializedName("createTime")
+    private String createTime;
+
     public Long getParseId() {
         return parseId;
     }
@@ -109,6 +112,14 @@ public class WatermarkParseDto {
 
     public void setFailReason(String failReason) {
         this.failReason = failReason;
+    }
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
     }
 
     /**

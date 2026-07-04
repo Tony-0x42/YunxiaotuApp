@@ -126,6 +126,11 @@
     <string name="parse_format_error">链接格式不正确，请检查链接</string>
     <string name="parse_failed">链接解析失败，请检查链接有效性或更换网络重试</string>
     <string name="parse_not_support">暂不支持该平台链接解析</string>
+    <string name="history">历史记录</string>
+    <string name="watermark_history_title">解析历史</string>
+    <string name="empty_watermark_history">暂无解析记录</string>
+    <string name="watermark_history_load_failed">历史记录加载失败：%1$s</string>
+    <string name="preview_placeholder">无视频预览</string>
     <string name="save_success">保存成功</string>
     <string name="save_failed">保存失败，请检查存储权限</string>
     <string name="nickname_error">昵称长度需在 2-20 个字符之间</string>
