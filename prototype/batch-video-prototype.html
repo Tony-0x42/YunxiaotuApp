@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>批量剪辑 - 可交互原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563EB',
+            primaryLight: '#3B82F6',
+            primaryBg: '#EFF6FF'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+    * { font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      border: 12px solid #1f2937;
+      border-radius: 44px;
+      overflow: hidden;
+      background: #f3f4f6;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+    .page {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      background: #f8fafc;
+    }
+    .page.active {
+      display: flex;
+      flex-direction: column;
+    }
+    .admin-page {
+      display: none;
+      min-height: 100vh;
+      background: #f1f5f9;
+    }
+    .admin-page.active {
+      display: flex;
+    }
+    .admin-content {
+      display: none;
+      width: 100%;
+    }
+    .admin-content.active {
+      display: block;
+    }
+    .screen-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+      padding: 20px;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .tab-active { color: #2563EB; border-bottom: 2px solid #2563EB; }
+    .tab-inactive { color: #6B7280; border-bottom: 2px solid transparent; }
+    .nav-active { color: #2563EB; }
+    .nav-inactive { color: #9CA3AF; }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: white; padding: 10px 20px; border-radius: 20px; z-index: 200; display: none; }
+    .toast.active { display: block; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #2563EB; }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .nav-panel {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 1000;
+      background: white;
+      border-radius: 12px 0 0 12px;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+      transition: width 0.3s ease;
+      overflow: hidden;
+    }
+    .nav-panel.collapsed {
+      width: 44px;
+    }
+    .nav-panel.expanded {
+      width: 220px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .nav-panel::-webkit-scrollbar { width: 4px; }
+    .nav-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+    .nav-toggle {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #2563EB;
+      color: white;
+      border-radius: 12px 0 0 12px;
+      font-size: 18px;
+    }
+    .nav-content {
+      padding: 12px;
+      display: none;
+    }
+    .nav-panel.expanded .nav-content {
+      display: block;
+    }
+    .nav-group {
+      margin-bottom: 12px;
+    }
+    .nav-group-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      padding-left: 4px;
+    }
+    .nav-item {
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: all 0.2s;
+    }
+    .nav-item:hover {
+      background: #EFF6FF;
+      color: #2563EB;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <!-- 入口选择 -->
+  <div id="entryPage" class="screen-center">
+    <div class="text-center">
+      <div class="w-24 h-24 bg-primary rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+        <span class="text-white text-4xl font-bold">云</span>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">批量剪辑</h1>
+      <p class="text-gray-500 mb-8">可交互原型演示</p>
+      <div class="space-y-4">
+        <button onclick="showAppLogin()" class="w-64 bg-primary hover:bg-primaryLight text-white font-medium py-3 px-6 rounded-xl shadow transition">
+          📱 演示 APP 端
+        </button>
+        <button onclick="showAdminLogin()" class="w-64 bg-white hover:bg-gray-50 text-gray-800 font-medium py-3 px-6 rounded-xl shadow transition border border-gray-200">
+          🖥️ 演示 Web 管理后台
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP 端容器 -->
+  <div id="appContainer" class="screen-center" style="display:none;">
+    <div class="phone-frame">
+      <!-- 状态栏占位 -->
+      <div class="h-7 bg-white flex items-center justify-between px-6 text-xs text-gray-800">
+        <span>9:41</span>
+        <div class="flex gap-1">
+          <span>📶</span>
+          <span>🔋</span>
+        </div>
+      </div>
+
+      <!-- APP 登录页 -->
+      <div id="page-app-login" class="page active bg-white">
+        <div class="flex-1 flex flex-col px-6 pt-12">
+          <div class="text-center mb-10">
+            <div class="w-20 h-20 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
+              <span class="text-white text-3xl font-bold">云</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">批量剪辑</h1>
+            <p class="text-gray-500 text-sm mt-1">AI短视频创作与去水印工具</p>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:outline-none transition" oninput="checkLoginForm()">
+            </div>
+            <div class="relative">
+              <input type="password" id="loginPwd" placeholder="请输入密码" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:outline-none transition" oninput="checkLoginForm()">
+              <span class="absolute right-4 top-3.5 text-gray-400 cursor-pointer" onclick="togglePwd('loginPwd')">👁</span>
+            </div>
+            <div class="flex items-center text-sm">
+              <input type="checkbox" id="loginAgree" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary" onchange="checkLoginForm()">
+              <span class="ml-2 text-gray-600">我已阅读并同意</span>
+              <span class="text-primary cursor-pointer ml-1" onclick="navigateTo('page-user-agreement')">《用户协议》</span>
+              <span class="text-gray-600">和</span>
+              <span class="text-primary cursor-pointer" onclick="navigateTo('page-privacy-policy')">《隐私政策》</span>
+            </div>
+            <button id="loginBtn" onclick="doLogin()" class="w-full bg-gray-300 text-white font-medium py-3 rounded-xl transition" disabled>登录</button>
+          </div>
+          <div class="flex justify-between mt-4 text-sm">
+            <span class="text-primary cursor-pointer">忘记密码</span>
+            <span class="text-primary cursor-pointer" onclick="navigateTo('page-app-register')">注册账号</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- APP 注册页 -->
+      <div id="page-app-register" class="page bg-white">
+        <div class="h-12 flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">注册账号</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 flex flex-col px-6 pt-8">
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-primary rounded-xl mx-auto mb-3 flex items-center justify-center">
+              <span class="text-white text-2xl font-bold">云</span>
+            </div>
+            <h1 class="text-xl font-bold">批量剪辑</h1>
+          </div>
+          <div class="bg-primaryBg rounded-xl p-4 mb-6">
+            <p class="text-sm text-gray-600">上级手机号</p>
+            <p class="text-lg font-medium text-primary">138*****1234</p>
+          </div>
+          <div class="space-y-4">
+            <input type="tel" placeholder="请输入手机号" maxlength="11" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:outline-none transition">
+            <div class="relative">
+              <input type="password" id="regPwd" placeholder="请输入密码" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:outline-none transition">
+              <span class="absolute right-4 top-3.5 text-gray-400 cursor-pointer" onclick="togglePwd('regPwd')">👁</span>
+            </div>
+            <div class="relative">
+              <input type="password" id="regPwd2" placeholder="请再次输入密码" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:outline-none transition">
+              <span class="absolute right-4 top-3.5 text-gray-400 cursor-pointer" onclick="togglePwd('regPwd2')">👁</span>
+            </div>
+            <div class="flex items-center text-sm">
+              <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+              <span class="ml-2 text-gray-600">我已阅读并同意</span>
+              <span class="text-primary cursor-pointer ml-1" onclick="navigateTo('page-user-agreement')">《用户协议》</span>
+              <span class="text-gray-600">和</span>
+              <span class="text-primary cursor-pointer" onclick="navigateTo('page-privacy-policy')">《隐私政策》</span>
+            </div>
+            <button onclick="doRegister()" class="w-full bg-primary text-white font-medium py-3 rounded-xl">注册</button>
+          </div>
+          <p class="text-center mt-4 text-sm text-primary cursor-pointer" onclick="navigateTo('page-app-login')">已有账号？去登录</p>
+        </div>
+      </div>
+
+      <!-- 首页 -->
+      <div id="page-home" class="page">
+        <div class="flex-1 overflow-y-auto hide-scrollbar pb-20">
+          <!-- 轮播图 -->
+          <div class="relative h-44 bg-gradient-to-r from-blue-500 to-blue-400 m-4 rounded-2xl overflow-hidden">
+            <div id="bannerSlides" class="flex transition-transform duration-500 h-full">
+              <div class="min-w-full h-full flex items-center justify-center text-white text-center p-6" style="background: linear-gradient(135deg, #2563EB, #60A5FA);">
+                <div>
+                  <p class="text-lg font-bold mb-1">批量剪辑 品牌发布会</p>
+                  <p class="text-sm opacity-90">AI赋能短视频创作</p>
+                </div>
+              </div>
+              <div class="min-w-full h-full flex items-center justify-center text-white text-center p-6" style="background: linear-gradient(135deg, #1E40AF, #3B82F6);">
+                <div>
+                  <p class="text-lg font-bold mb-1">夏季招商大会</p>
+                  <p class="text-sm opacity-90">共创AI营销新生态</p>
+                </div>
+              </div>
+              <div class="min-w-full h-full flex items-center justify-center text-white text-center p-6" style="background: linear-gradient(135deg, #0EA5E9, #2563EB);">
+                <div>
+                  <p class="text-lg font-bold mb-1">新功能上线</p>
+                  <p class="text-sm opacity-90">AI去水印全面升级</p>
+                </div>
+              </div>
+            </div>
+            <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-white banner-dot active"></span>
+              <span class="w-2 h-2 rounded-full bg-white/50 banner-dot"></span>
+              <span class="w-2 h-2 rounded-full bg-white/50 banner-dot"></span>
+            </div>
+          </div>
+
+          <!-- 喜报 -->
+          <div class="mx-4 mb-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-100">
+            <p class="text-sm font-medium text-amber-800 mb-2">🎉 恭喜华东区超额完成 Q2 目标！</p>
+            <div class="flex items-baseline gap-2">
+              <span class="text-gray-600 text-sm">销售冠军</span>
+              <span class="font-bold text-gray-800">王小明</span>
+              <span class="text-primary text-xl font-bold">¥586,000</span>
+            </div>
+          </div>
+
+          <!-- 功能导航 -->
+          <div class="mx-4 mb-4 bg-white rounded-2xl p-5 shadow-sm">
+            <h3 class="font-bold text-gray-800 mb-4">功能导航</h3>
+            <div class="grid grid-cols-4 gap-4">
+              <div class="text-center cursor-pointer" onclick="navigateTo('page-study')">
+                <div class="w-12 h-12 bg-primaryBg rounded-xl mx-auto mb-2 flex items-center justify-center text-xl">📚</div>
+                <p class="text-xs text-gray-700">学习专区</p>
+              </div>
+              <div class="text-center cursor-pointer" onclick="navigateTo('page-contact')">
+                <div class="w-12 h-12 bg-primaryBg rounded-xl mx-auto mb-2 flex items-center justify-center text-xl">📞</div>
+                <p class="text-xs text-gray-700">信息咨询</p>
+              </div>
+              <div class="text-center cursor-pointer" onclick="navigateTo('page-brand')">
+                <div class="w-12 h-12 bg-primaryBg rounded-xl mx-auto mb-2 flex items-center justify-center text-xl">🏷️</div>
+                <p class="text-xs text-gray-700">品牌专区</p>
+              </div>
+              <div class="text-center cursor-pointer" onclick="showToast('功能开发中，敬请期待')">
+                <div class="w-12 h-12 bg-gray-100 rounded-xl mx-auto mb-2 flex items-center justify-center text-xl">➕</div>
+                <p class="text-xs text-gray-700">其他服务</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 教程入口 -->
+          <div class="mx-4 mb-4 bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer" onclick="navigateTo('page-guide')">
+            <div class="h-28 bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center px-5">
+              <div class="text-white">
+                <p class="text-lg font-bold">新手指南</p>
+                <p class="text-sm opacity-90">快速上手 AI 视频创作</p>
+              </div>
+              <span class="text-4xl ml-auto">🚀</span>
+            </div>
+            <div class="p-3 flex justify-between items-center">
+              <span class="text-sm text-gray-600">查看操作指南、常见问题</span>
+              <span class="text-primary text-sm">去查看 →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 学习专区 -->
+      <div id="page-study" class="page bg-gray-50">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">学习专区</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar">
+          <div class="flex bg-white px-4 border-b border-gray-100">
+            <div class="flex-1 py-3 text-center text-sm tab-active">全部</div>
+            <div class="flex-1 py-3 text-center text-sm tab-inactive">视频</div>
+            <div class="flex-1 py-3 text-center text-sm tab-inactive">文档</div>
+          </div>
+          <div class="p-4 space-y-3">
+            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer">
+              <div class="w-24 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">▶️</div>
+              <div class="flex-1">
+                <h4 class="font-medium text-gray-800 text-sm">AI云创入门教程</h4>
+                <p class="text-xs text-gray-500 mt-1">视频 · 2026-06-20</p>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer">
+              <div class="w-24 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">📄</div>
+              <div class="flex-1">
+                <h4 class="font-medium text-gray-800 text-sm">短视频运营指南</h4>
+                <p class="text-xs text-gray-500 mt-1">文档 · 2026-06-18</p>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer">
+              <div class="w-24 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">▶️</div>
+              <div class="flex-1">
+                <h4 class="font-medium text-gray-800 text-sm">去水印功能详解</h4>
+                <p class="text-xs text-gray-500 mt-1">视频 · 2026-06-15</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 品牌专区 -->
+      <div id="page-brand" class="page bg-gray-50">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">品牌专区</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white rounded-xl p-4 text-center shadow-sm cursor-pointer">
+              <div class="w-14 h-14 bg-blue-100 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">🌟</div>
+              <h4 class="font-medium text-sm">品牌A</h4>
+              <p class="text-xs text-gray-500 mt-1 line-clamp-2">专注高端护肤品牌</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center shadow-sm cursor-pointer">
+              <div class="w-14 h-14 bg-green-100 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">🍃</div>
+              <h4 class="font-medium text-sm">品牌B</h4>
+              <p class="text-xs text-gray-500 mt-1 line-clamp-2">健康食品领导品牌</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center shadow-sm cursor-pointer">
+              <div class="w-14 h-14 bg-purple-100 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">💎</div>
+              <h4 class="font-medium text-sm">品牌C</h4>
+              <p class="text-xs text-gray-500 mt-1 line-clamp-2">珠宝首饰精品</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center shadow-sm cursor-pointer">
+              <div class="w-14 h-14 bg-orange-100 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">🏠</div>
+              <h4 class="font-medium text-sm">品牌D</h4>
+              <p class="text-xs text-gray-500 mt-1 line-clamp-2">智能家居解决方案</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 联系方式 -->
+      <div id="page-contact" class="page bg-gray-50">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">信息咨询</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-4">
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <h4 class="font-medium text-gray-800 mb-2">在线客服</h4>
+            <button class="w-full bg-primary text-white py-2 rounded-lg text-sm">联系在线客服</button>
+          </div>
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <h4 class="font-medium text-gray-800 mb-2">总台电话</h4>
+            <p class="text-primary text-lg font-medium">400-888-8888</p>
+            <p class="text-xs text-gray-500 mt-1">服务时段：早 9:00-18:00</p>
+          </div>
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <h4 class="font-medium text-gray-800 mb-3">各地经销负责人</h4>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <div>
+                  <p class="text-sm font-medium">张经理</p>
+                  <p class="text-xs text-gray-500">华东地区</p>
+                </div>
+                <span class="text-primary text-sm">138-0000-0001</span>
+              </div>
+              <div class="border-t border-gray-100"></div>
+              <div class="flex justify-between items-center">
+                <div>
+                  <p class="text-sm font-medium">李经理</p>
+                  <p class="text-xs text-gray-500">华南地区</p>
+                </div>
+                <span class="text-primary text-sm">138-0000-0002</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 新手指南 -->
+      <div id="page-guide" class="page bg-gray-50">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">新手指南</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar">
+          <div class="flex bg-white px-4 border-b border-gray-100">
+            <div class="flex-1 py-3 text-center text-sm tab-active">快速上手</div>
+            <div class="flex-1 py-3 text-center text-sm tab-inactive">操作指南</div>
+            <div class="flex-1 py-3 text-center text-sm tab-inactive">常见问题</div>
+          </div>
+          <div class="p-4 space-y-3">
+            <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer">
+              <h4 class="font-medium text-gray-800 text-sm">如何创建第一个视频组</h4>
+              <p class="text-xs text-gray-500 mt-2">2026-06-20</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer">
+              <h4 class="font-medium text-gray-800 text-sm">AI分割功能使用说明</h4>
+              <p class="text-xs text-gray-500 mt-2">2026-06-18</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer">
+              <h4 class="font-medium text-gray-800 text-sm">去水印链接解析教程</h4>
+              <p class="text-xs text-gray-500 mt-2">2026-06-15</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer">
+              <h4 class="font-medium text-gray-800 text-sm">算力消耗规则说明</h4>
+              <p class="text-xs text-gray-500 mt-2">2026-06-10</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 云创 -->
+      <div id="page-aicloud" class="page">
+        <div class="flex-1 overflow-y-auto hide-scrollbar pb-20">
+          <div class="bg-white px-4 py-3 border-b border-gray-100">
+            <div class="relative">
+              <input type="text" placeholder="搜索视频组名称" class="w-full bg-gray-100 rounded-full px-4 py-2 pl-10 text-sm focus:outline-none">
+              <span class="absolute left-3.5 top-2 text-gray-400 text-sm">🔍</span>
+            </div>
+          </div>
+          <div class="mx-4 mt-4 bg-white rounded-2xl p-4 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-gray-600">算力消耗</span>
+              <span class="text-primary text-xl font-bold">35.6%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div class="bg-primary h-2 rounded-full" style="width: 35.6%"></div>
+            </div>
+            <p class="text-xs text-gray-500">已消耗 356/1000 GF</p>
+          </div>
+          <div class="mx-4 mt-4 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800">视频素材库</h3>
+            <button onclick="navigateTo('page-aicloud-edit')" class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center">+</button>
+          </div>
+          <div class="mx-4 mt-3 space-y-3 pb-4">
+            <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer" onclick="navigateTo('page-aicloud-edit')">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-medium text-gray-800">产品宣传片组A</h4>
+                  <p class="text-xs text-gray-500 mt-1">2026-06-25</p>
+                  <p class="text-xs text-gray-400 mt-2">已生成 3/10 条</p>
+                </div>
+                <button onclick="event.stopPropagation(); showConfirm('确定删除该视频组吗？')" class="text-red-500 text-sm">删除</button>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer" onclick="navigateTo('page-aicloud-edit')">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-medium text-gray-800">618活动素材组</h4>
+                  <p class="text-xs text-gray-500 mt-1">2026-06-20</p>
+                  <p class="text-xs text-gray-400 mt-2">已生成 5/10 条</p>
+                </div>
+                <button onclick="event.stopPropagation(); showConfirm('确定删除该视频组吗？')" class="text-red-500 text-sm">删除</button>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer" onclick="navigateTo('page-aicloud-edit')">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-medium text-gray-800">品牌故事素材组</h4>
+                  <p class="text-xs text-gray-500 mt-1">2026-06-15</p>
+                  <p class="text-xs text-gray-400 mt-2">已生成 0/10 条</p>
+                </div>
+                <button onclick="event.stopPropagation(); showConfirm('确定删除该视频组吗？')" class="text-red-500 text-sm">删除</button>
+              </div>
+            </div>
+          </div>
+          <div class="mx-4 mb-4">
+            <button onclick="navigateTo('page-aicloud-edit')" class="w-full bg-primary text-white py-3 rounded-xl font-medium">新增视频素材</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 云创 视频组编辑 -->
+      <div id="page-aicloud-edit" class="page">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">产品宣传片组A</span>
+          <span class="text-primary text-sm cursor-pointer">保存</span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar pb-24">
+          <div class="bg-black h-48 flex items-center justify-center">
+            <div class="text-center text-white">
+              <span class="text-4xl">▶️</span>
+              <p class="text-sm mt-2 opacity-80">点击预览视频</p>
+            </div>
+          </div>
+          <div class="bg-white px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+            <span class="text-sm text-gray-600">分镜头 2/50 已生成 0/0</span>
+            <div class="flex gap-3">
+              <button onclick="navigateTo('page-aicloud-progress')" class="text-xs bg-primaryBg text-primary px-3 py-1.5 rounded-full">AI 视频分割</button>
+              <button onclick="navigateTo('page-aicloud-progress')" class="text-xs bg-primaryBg text-primary px-3 py-1.5 rounded-full">查看进度</button>
+            </div>
+          </div>
+          <div class="bg-white px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+            <span class="text-sm text-gray-700">保留原视频原声</span>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="p-4">
+            <h4 class="font-medium text-gray-800 mb-3">分镜头素材</h4>
+            <div class="grid grid-cols-3 gap-3">
+              <div class="bg-gray-800 rounded-lg aspect-[9/16] flex items-center justify-center relative">
+                <span class="absolute top-1 left-1 text-white text-xs bg-black/50 px-1.5 rounded">1</span>
+                <span class="text-white text-xs">镜头1</span>
+                <span class="absolute top-1 right-1 text-white text-xs cursor-pointer">×</span>
+              </div>
+              <div class="bg-gray-800 rounded-lg aspect-[9/16] flex items-center justify-center relative">
+                <span class="absolute top-1 left-1 text-white text-xs bg-black/50 px-1.5 rounded">2</span>
+                <span class="text-white text-xs">镜头2</span>
+                <span class="absolute top-1 right-1 text-white text-xs cursor-pointer">×</span>
+              </div>
+              <div class="border-2 border-dashed border-gray-300 rounded-lg aspect-[9/16] flex items-center justify-center cursor-pointer">
+                <span class="text-gray-400 text-2xl">+</span>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white mx-4 rounded-xl p-4 shadow-sm mb-3">
+            <h4 class="font-medium text-gray-800 mb-3">AI 口播配音</h4>
+            <div class="flex gap-4 mb-3 text-sm">
+              <label class="flex items-center gap-1"><input type="radio" name="dub" checked class="text-primary"> 文字转语音</label>
+              <label class="flex items-center gap-1"><input type="radio" name="dub" class="text-primary"> 本地录音</label>
+            </div>
+            <textarea placeholder="请输入配音文本" class="w-full border border-gray-300 rounded-lg p-3 text-sm h-20 focus:border-primary focus:outline-none"></textarea>
+          </div>
+          <div class="bg-white mx-4 rounded-xl p-4 shadow-sm mb-4">
+            <h4 class="font-medium text-gray-800 mb-3">背景音乐</h4>
+            <div class="flex gap-3">
+              <button class="flex-1 bg-primaryBg text-primary py-2 rounded-lg text-sm">本地上传</button>
+              <button class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm">提取原声</button>
+            </div>
+          </div>
+        </div>
+        <div class="absolute bottom-16 left-0 right-0 px-4 pb-2 bg-gradient-to-t from-gray-50 to-transparent">
+          <button onclick="showToast('AI生成任务已提交，消耗算力 10 GF')" class="w-full bg-primary text-white py-3 rounded-xl font-medium">AI 生成</button>
+        </div>
+      </div>
+
+      <!-- AI 视频分割进度 -->
+      <div id="page-aicloud-progress" class="page bg-white">
+        <div class="h-12 flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">视频分割中</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 flex flex-col items-center justify-center px-8">
+          <div class="w-24 h-24 rounded-full border-4 border-primary border-t-transparent animate-spin mb-6"></div>
+          <p class="text-2xl font-bold text-primary mb-2">65%</p>
+          <p class="text-gray-600 text-sm mb-1">正在处理：product_01.mp4</p>
+          <p class="text-gray-400 text-xs mb-8">切片时长：2.5s</p>
+          <p class="text-xs text-gray-500 text-center">切分完成后将自动返回编辑页<br>您可以将 APP 切换至后台</p>
+          <button onclick="goBack()" class="mt-8 text-primary text-sm">返回编辑页</button>
+        </div>
+      </div>
+
+      <!-- AI 去水印 -->
+      <div id="page-watermark" class="page">
+        <div class="flex-1 overflow-y-auto hide-scrollbar pb-20">
+          <div class="bg-white px-4 py-4 border-b border-gray-100">
+            <div class="flex gap-2">
+              <input type="text" id="watermarkUrl" placeholder="请粘贴短视频平台分享链接" class="flex-1 bg-gray-100 rounded-xl px-4 py-3 text-sm focus:outline-none">
+              <button onclick="document.getElementById('watermarkUrl').value=''" class="px-4 bg-gray-200 text-gray-600 rounded-xl text-sm">清空</button>
+            </div>
+            <button onclick="parseWatermark()" class="w-full bg-primary text-white py-3 rounded-xl mt-3 font-medium">解析</button>
+          </div>
+          <div id="watermarkResult" class="hidden">
+            <div class="flex bg-white border-b border-gray-100">
+              <div class="flex-1 py-3 text-center text-sm tab-active">视频</div>
+              <div class="flex-1 py-3 text-center text-sm tab-inactive">图片</div>
+              <div class="flex-1 py-3 text-center text-sm tab-inactive">文本</div>
+            </div>
+            <div class="p-4">
+              <div class="bg-black rounded-xl h-56 flex items-center justify-center mb-4">
+                <div class="text-center text-white">
+                  <span class="text-4xl">▶️</span>
+                  <p class="text-sm mt-2">去水印成片预览</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
+                <h4 class="font-medium text-gray-800 text-sm mb-2">视频文案</h4>
+                <p class="text-sm text-gray-600">这是一款超好用的产品，快来试试吧！#好物推荐 #短视频</p>
+              </div>
+              <button class="w-full bg-primary text-white py-3 rounded-xl font-medium">保存到相册</button>
+            </div>
+          </div>
+          <div id="watermarkEmpty" class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-3xl mb-4">🔗</div>
+            <p class="text-gray-500 text-sm">粘贴短视频平台分享链接<br>点击解析即可去除水印</p>
+            <p class="text-xs text-gray-400 mt-2">支持抖音、小红书等平台</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 我的 -->
+      <div id="page-profile" class="page">
+        <div class="flex-1 overflow-y-auto hide-scrollbar pb-20">
+          <div class="bg-gradient-to-br from-primary to-primaryLight p-6 text-white">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl">👤</div>
+              <div>
+                <h3 class="font-bold text-lg">王小明</h3>
+                <p class="text-sm opacity-90">159*****1415</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="bg-white/20 px-3 py-1 rounded-full text-xs">VIP</span>
+              <span class="text-sm">有效期至 2029-05-24</span>
+            </div>
+          </div>
+          <div class="mx-4 -mt-4 bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer" onclick="navigateTo('page-profile-edit')">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">✏️</span>
+                <span class="text-sm">编辑账号资料</span>
+              </div>
+              <span class="text-gray-400">→</span>
+            </div>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer" onclick="navigateTo('page-service')">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">🎧</span>
+                <span class="text-sm">联系客服</span>
+              </div>
+              <span class="text-gray-400">→</span>
+            </div>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">🎵</span>
+                <span class="text-sm">抖音账号管理</span>
+              </div>
+              <span class="text-gray-400">→</span>
+            </div>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">💬</span>
+                <span class="text-sm">绑定微信</span>
+              </div>
+              <span class="text-gray-400">→</span>
+            </div>
+            <div class="p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">🔄</span>
+                <span class="text-sm">切换账号</span>
+              </div>
+              <span class="text-gray-400">→</span>
+            </div>
+          </div>
+          <div class="mx-4 mt-4 bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer" onclick="navigateTo('page-user-agreement')">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">📋</span>
+                <span class="text-sm">用户协议</span>
+              </div>
+              <span class="text-gray-400">→</span>
+            </div>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer" onclick="navigateTo('page-privacy-policy')">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">🔒</span>
+                <span class="text-sm">隐私政策</span>
+              </div>
+              <span class="text-gray-400">→</span>
+            </div>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">🗑️</span>
+                <span class="text-sm">清理缓存</span>
+              </div>
+              <span class="text-sm text-gray-500">395.46MB</span>
+            </div>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">⬆️</span>
+                <span class="text-sm">检查版本</span>
+              </div>
+              <span class="text-sm text-gray-500">v1.2.0</span>
+            </div>
+            <div class="p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">ℹ️</span>
+                <span class="text-sm">版本信息</span>
+              </div>
+              <span class="text-sm text-gray-500">v1.2.0</span>
+            </div>
+          </div>
+          <div class="mx-4 mt-6 mb-4">
+            <button onclick="showConfirm('确定退出登录吗？', () => navigateTo('page-app-login'))" class="w-full bg-primary text-white py-3 rounded-xl font-medium">退出登录</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 账号资料编辑 -->
+      <div id="page-profile-edit" class="page bg-gray-50">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">编辑资料</span>
+          <span class="text-primary text-sm cursor-pointer" onclick="showToast('保存成功')">保存</span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-4">
+          <div class="text-center mb-6">
+            <div class="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center text-3xl relative">
+              👤
+              <div class="absolute bottom-0 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-xs">📷</div>
+            </div>
+            <p class="text-sm text-primary cursor-pointer">更换头像</p>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <span class="text-sm text-gray-600">账号名称</span>
+              <input type="text" value="王小明" class="text-right text-sm focus:outline-none">
+            </div>
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <span class="text-sm text-gray-600">手机号</span>
+              <span class="text-sm text-gray-800">159*****1415 →</span>
+            </div>
+            <div class="p-4 flex items-center justify-between">
+              <span class="text-sm text-gray-600">简介</span>
+              <input type="text" placeholder="请输入简介" class="text-right text-sm focus:outline-none">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 联系客服 -->
+      <div id="page-service" class="page bg-gray-50">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">联系客服</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-4">
+          <div class="bg-white rounded-xl p-5 shadow-sm mb-4">
+            <p class="text-sm text-gray-600 mb-1">客服电话</p>
+            <p class="text-2xl font-bold text-primary">400-888-8888</p>
+            <p class="text-xs text-gray-500 mt-2">服务时段：早 9:00-18:00</p>
+          </div>
+          <button class="w-full bg-primary text-white py-3 rounded-xl font-medium mb-4">在线客服</button>
+          <div class="bg-white rounded-xl p-4 shadow-sm cursor-pointer" onclick="navigateTo('page-guide')">
+            <span class="text-sm">常见问题</span>
+            <span class="float-right text-gray-400">→</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 用户协议 -->
+      <div id="page-user-agreement" class="page bg-white">
+        <div class="h-12 flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">用户协议</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-5">
+          <h2 class="font-bold text-lg mb-4">批量剪辑 用户协议</h2>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">欢迎使用批量剪辑！本协议是您与批量剪辑之间关于使用本产品服务的协议。</p>
+          <h3 class="font-bold text-sm mt-4 mb-2">一、服务说明</h3>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">批量剪辑提供AI短视频创作、去水印、学习资料查看等服务。用户应当按照本协议约定使用服务。</p>
+          <h3 class="font-bold text-sm mt-4 mb-2">二、账号注册</h3>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">用户应当使用真实有效的手机号注册账号，并对账号安全负责。</p>
+          <h3 class="font-bold text-sm mt-4 mb-2">三、算力使用</h3>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">算力为账号维度独立数据，算力耗尽时将无法使用视频生成、下载功能。</p>
+          <p class="text-xs text-gray-400 mt-6">更新时间：2026-06-01</p>
+        </div>
+      </div>
+
+      <!-- 隐私政策 -->
+      <div id="page-privacy-policy" class="page bg-white">
+        <div class="h-12 flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">隐私政策</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-5">
+          <h2 class="font-bold text-lg mb-4">批量剪辑 隐私政策</h2>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">批量剪辑重视您的个人信息和隐私保护。本政策说明我们如何收集、使用和保护您的信息。</p>
+          <h3 class="font-bold text-sm mt-4 mb-2">一、信息收集</h3>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">我们可能会收集您的手机号、设备信息、使用日志等，以提供服务。</p>
+          <h3 class="font-bold text-sm mt-4 mb-2">二、信息使用</h3>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">我们仅在提供服务和改进产品时使用您的信息，不会向第三方出售。</p>
+          <h3 class="font-bold text-sm mt-4 mb-2">三、信息安全</h3>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">我们采用合理的技术措施保护您的信息安全。</p>
+          <p class="text-xs text-gray-400 mt-6">更新时间：2026-06-01</p>
+        </div>
+      </div>
+
+      <!-- 底部导航 -->
+      <div id="appTabBar" class="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-200 flex items-center justify-around">
+        <div class="flex flex-col items-center cursor-pointer nav-active" onclick="switchAppTab('page-home')">
+          <span class="text-xl">🏠</span>
+          <span class="text-xs mt-0.5">首页</span>
+        </div>
+        <div class="flex flex-col items-center cursor-pointer nav-inactive" onclick="switchAppTab('page-aicloud')">
+          <span class="text-xl">🎬</span>
+          <span class="text-xs mt-0.5">AI 云创</span>
+        </div>
+        <div class="flex flex-col items-center cursor-pointer nav-inactive" onclick="switchAppTab('page-watermark')">
+          <span class="text-xl">💧</span>
+          <span class="text-xs mt-0.5">AI 去水印</span>
+        </div>
+        <div class="flex flex-col items-center cursor-pointer nav-inactive" onclick="switchAppTab('page-profile')">
+          <span class="text-xl">👤</span>
+          <span class="text-xs mt-0.5">我的</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Web 管理后台容器 -->
+  <div id="adminContainer" style="display:none;">
+    <!-- 后台登录页 -->
+    <div id="page-admin-login" class="admin-page active" style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);">
+      <div class="m-auto w-full max-w-md px-6">
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-primary rounded-xl mx-auto mb-4 flex items-center justify-center">
+              <span class="text-white text-2xl font-bold">云</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">批量剪辑 管理后台</h1>
+          </div>
+          <div class="space-y-4">
+            <input type="text" id="adminAccount" placeholder="请输入管理员账号/手机号" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:outline-none transition" oninput="checkAdminLoginForm()">
+            <div class="relative">
+              <input type="password" id="adminPwd" placeholder="请输入密码" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:outline-none transition" oninput="checkAdminLoginForm()">
+              <span class="absolute right-4 top-3.5 text-gray-400 cursor-pointer" onclick="togglePwd('adminPwd')">👁</span>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" placeholder="请输入验证码" class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:outline-none transition">
+              <div class="w-28 h-12 bg-gray-200 rounded-xl flex items-center justify-center text-sm text-gray-600 cursor-pointer">A3K9</div>
+            </div>
+            <div class="flex items-center text-sm">
+              <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+              <span class="ml-2 text-gray-600">记住密码</span>
+            </div>
+            <button id="adminLoginBtn" onclick="doAdminLogin()" class="w-full bg-gray-300 text-white font-medium py-3 rounded-xl transition" disabled>登录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 后台主体布局 -->
+    <div id="adminLayout" class="admin-page">
+      <!-- 顶部导航 -->
+      <header class="fixed top-0 left-0 right-0 h-14 bg-white shadow-sm z-40 flex items-center justify-between px-6">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">云</div>
+          <span class="font-bold text-gray-800">批量剪辑 管理后台</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-gray-600">总后台管理员</span>
+          <button onclick="showAdminLogin()" class="text-sm text-gray-500 hover:text-primary">退出登录</button>
+        </div>
+      </header>
+
+      <!-- 侧边栏 -->
+      <aside class="fixed top-14 left-0 bottom-0 w-56 bg-white border-r border-gray-200 overflow-y-auto">
+        <nav class="p-4 space-y-1">
+          <div onclick="switchAdminPage('admin-dashboard')" class="admin-menu-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer bg-primaryBg text-primary">
+            <span>📊</span>
+            <span class="text-sm font-medium">数据统计</span>
+          </div>
+          <div onclick="switchAdminPage('admin-customer')" class="admin-menu-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-50 text-gray-700">
+            <span>👥</span>
+            <span class="text-sm font-medium">客户管理</span>
+          </div>
+          <div onclick="switchAdminPage('admin-vip')" class="admin-menu-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-50 text-gray-700">
+            <span>💎</span>
+            <span class="text-sm font-medium">会员VIP管理</span>
+          </div>
+          <div onclick="switchAdminPage('admin-home-config')" class="admin-menu-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-50 text-gray-700">
+            <span>🏠</span>
+            <span class="text-sm font-medium">首页内容管理</span>
+          </div>
+          <div onclick="switchAdminPage('admin-notice')" class="admin-menu-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-50 text-gray-700">
+            <span>📢</span>
+            <span class="text-sm font-medium">公告管理</span>
+          </div>
+          <div onclick="switchAdminPage('admin-course')" class="admin-menu-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-50 text-gray-700">
+            <span>📚</span>
+            <span class="text-sm font-medium">教程管理</span>
+          </div>
+          <div onclick="switchAdminPage('admin-doc')" class="admin-menu-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-50 text-gray-700">
+            <span>📄</span>
+            <span class="text-sm font-medium">文档管理</span>
+          </div>
+          <div onclick="switchAdminPage('admin-system')" class="admin-menu-item flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-50 text-gray-700">
+            <span>⚙️</span>
+            <span class="text-sm font-medium">系统配置</span>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- 内容区 -->
+      <main class="ml-56 mt-14 p-6 flex-1">
+        <!-- 数据统计 -->
+        <div id="admin-dashboard" class="admin-content active">
+          <h2 class="text-xl font-bold text-gray-800 mb-6">数据统计</h2>
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+              <p class="text-sm text-gray-500">账号总数</p>
+              <p class="text-2xl font-bold text-primary mt-1">1,286</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+              <p class="text-sm text-gray-500">今日新增账号</p>
+              <p class="text-2xl font-bold text-primary mt-1">24</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+              <p class="text-sm text-gray-500">今日算力消耗</p>
+              <p class="text-2xl font-bold text-primary mt-1">3,560 GF</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+              <p class="text-sm text-gray-500">今日视频生成</p>
+              <p class="text-2xl font-bold text-primary mt-1">892</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h3 class="font-bold text-gray-800 mb-4">近7天新增用户趋势</h3>
+            <div class="h-48 flex items-end gap-4 px-4">
+              <div class="flex-1 bg-primary/20 rounded-t hover:bg-primary/40 transition" style="height: 40%"></div>
+              <div class="flex-1 bg-primary/30 rounded-t hover:bg-primary/50 transition" style="height: 60%"></div>
+              <div class="flex-1 bg-primary/40 rounded-t hover:bg-primary/60 transition" style="height: 45%"></div>
+              <div class="flex-1 bg-primary/50 rounded-t hover:bg-primary/70 transition" style="height: 80%"></div>
+              <div class="flex-1 bg-primary/60 rounded-t hover:bg-primary/80 transition" style="height: 65%"></div>
+              <div class="flex-1 bg-primary/70 rounded-t hover:bg-primary/90 transition" style="height: 90%"></div>
+              <div class="flex-1 bg-primary rounded-t hover:bg-primaryLight transition" style="height: 75%"></div>
+            </div>
+            <div class="flex justify-between mt-2 px-4 text-xs text-gray-500">
+              <span>06-28</span><span>06-29</span><span>06-30</span><span>07-01</span><span>07-02</span><span>07-03</span><span>07-04</span>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+              <h3 class="font-bold text-gray-800">数据明细</h3>
+              <button class="text-sm text-primary border border-primary px-3 py-1 rounded-lg">导出数据</button>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">账号类型</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">账号名称</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">手机号</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">创建时间</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">状态</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50 cursor-pointer">
+                  <td class="px-4 py-3">分公司</td>
+                  <td class="px-4 py-3">华东分公司</td>
+                  <td class="px-4 py-3">13800001001</td>
+                  <td class="px-4 py-3">2026-01-15</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">启用</span></td>
+                </tr>
+                <tr class="hover:bg-gray-50 cursor-pointer">
+                  <td class="px-4 py-3">服务商</td>
+                  <td class="px-4 py-3">杭州服务商A</td>
+                  <td class="px-4 py-3">13800001002</td>
+                  <td class="px-4 py-3">2026-02-20</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">启用</span></td>
+                </tr>
+                <tr class="hover:bg-gray-50 cursor-pointer">
+                  <td class="px-4 py-3">个人</td>
+                  <td class="px-4 py-3">王小明</td>
+                  <td class="px-4 py-3">15912345678</td>
+                  <td class="px-4 py-3">2026-03-10</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">启用</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 客户管理 -->
+        <div id="admin-customer" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-800">客户管理</h2>
+              <button onclick="switchAdminPage('admin-customer-add')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm">+ 新增账号</button>
+            </div>
+            <div class="flex gap-3 mb-4">
+              <input type="text" placeholder="手机号/账号名称/联系人" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:border-primary focus:outline-none">
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部类型</option>
+                <option>分公司</option>
+                <option>服务商</option>
+                <option>个人</option>
+              </select>
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部状态</option>
+                <option>启用</option>
+                <option>禁用</option>
+              </select>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">搜索</button>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">账号类型</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">账号名称</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">联系人</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">手机号</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">上级手机号</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">算力配额</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">VIP有效期</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">状态</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">分公司</td>
+                  <td class="px-4 py-3">华东分公司</td>
+                  <td class="px-4 py-3">张总</td>
+                  <td class="px-4 py-3">13800001001</td>
+                  <td class="px-4 py-3">-</td>
+                  <td class="px-4 py-3">50000 GF</td>
+                  <td class="px-4 py-3">2029-12-31</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">启用</span></td>
+                  <td class="px-4 py-3">
+                    <button onclick="switchAdminPage('admin-customer-detail')" class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-red-500 text-sm" onclick="showConfirm('确定删除该账号吗？')">删除</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">服务商</td>
+                  <td class="px-4 py-3">杭州服务商A</td>
+                  <td class="px-4 py-3">李经理</td>
+                  <td class="px-4 py-3">13800001002</td>
+                  <td class="px-4 py-3">13800001001</td>
+                  <td class="px-4 py-3">10000 GF</td>
+                  <td class="px-4 py-3">2029-12-31</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">启用</span></td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-red-500 text-sm">删除</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">个人</td>
+                  <td class="px-4 py-3">王小明</td>
+                  <td class="px-4 py-3">王小明</td>
+                  <td class="px-4 py-3">15912345678</td>
+                  <td class="px-4 py-3">13800001002</td>
+                  <td class="px-4 py-3">1000 GF</td>
+                  <td class="px-4 py-3">2029-05-24</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">启用</span></td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-red-500 text-sm">删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="flex justify-end mt-4">
+              <div class="flex gap-1">
+                <button class="px-3 py-1 border border-gray-300 rounded text-sm">上一页</button>
+                <button class="px-3 py-1 bg-primary text-white rounded text-sm">1</button>
+                <button class="px-3 py-1 border border-gray-300 rounded text-sm">2</button>
+                <button class="px-3 py-1 border border-gray-300 rounded text-sm">下一页</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 新增账号 -->
+        <div id="admin-customer-add" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6 max-w-3xl">
+            <div class="flex items-center gap-3 mb-6">
+              <span class="text-xl cursor-pointer" onclick="switchAdminPage('admin-customer')">←</span>
+              <h2 class="text-xl font-bold text-gray-800">新增账号</h2>
+            </div>
+            <div class="space-y-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">账号类型 <span class="text-red-500">*</span></label>
+                <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                  <option>分公司</option>
+                  <option>服务商</option>
+                  <option>个人</option>
+                </select>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">账号名称 <span class="text-red-500">*</span></label>
+                  <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">联系人 <span class="text-red-500">*</span></label>
+                  <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">当前账号手机号 <span class="text-red-500">*</span></label>
+                <input type="tel" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">上级手机号</label>
+                <input type="tel" placeholder="服务商/个人账号必填" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">最大可创建服务商数量</label>
+                  <input type="number" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">个人账号总容量</label>
+                  <input type="number" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">算力总配额 (GF) <span class="text-red-500">*</span></label>
+                  <input type="number" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">VIP 有效期 <span class="text-red-500">*</span></label>
+                  <input type="date" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                </div>
+              </div>
+              <div class="flex gap-3 pt-4">
+                <button onclick="switchAdminPage('admin-customer')" class="px-6 py-2 border border-gray-300 rounded-lg text-sm">取消</button>
+                <button onclick="showToast('账号创建成功，已生成注册二维码'); switchAdminPage('admin-customer')" class="px-6 py-2 bg-primary text-white rounded-lg text-sm">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 账号详情 -->
+        <div id="admin-customer-detail" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <div class="flex items-center gap-3">
+                <span class="text-xl cursor-pointer" onclick="switchAdminPage('admin-customer')">←</span>
+                <h2 class="text-xl font-bold text-gray-800">账号详情</h2>
+              </div>
+              <button class="text-primary text-sm">编辑</button>
+            </div>
+            <div class="grid grid-cols-4 gap-4 mb-6">
+              <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-xs text-gray-500">账号类型</p>
+                <p class="font-medium">分公司</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-xs text-gray-500">账号名称</p>
+                <p class="font-medium">华东分公司</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-xs text-gray-500">手机号</p>
+                <p class="font-medium">13800001001</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-xs text-gray-500">状态</p>
+                <p class="font-medium text-green-600">启用</p>
+              </div>
+            </div>
+            <div class="flex border-b border-gray-200 mb-4">
+              <div class="px-4 py-2 tab-active cursor-pointer text-sm font-medium">下级账号</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">算力记录</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">生成记录</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">注册二维码</div>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">账号类型</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">账号名称</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">手机号</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">创建时间</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">状态</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr>
+                  <td class="px-4 py-3">服务商</td>
+                  <td class="px-4 py-3">杭州服务商A</td>
+                  <td class="px-4 py-3">13800001002</td>
+                  <td class="px-4 py-3">2026-02-20</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">启用</span></td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">迁移</button>
+                    <button class="text-red-500 text-sm">删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+        <!-- 会员VIP管理 -->
+        <div id="admin-vip" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-800">会员VIP管理</h2>
+              <button onclick="showToast('已打开批量调整弹窗')" class="bg-primary text-white px-4 py-2 rounded-lg text-sm">批量调整VIP</button>
+            </div>
+            <div class="flex gap-3 mb-4">
+              <input type="text" placeholder="手机号/账号名称" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:border-primary focus:outline-none">
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部类型</option>
+                <option>分公司</option>
+                <option>服务商</option>
+                <option>个人</option>
+              </select>
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部状态</option>
+                <option>有效</option>
+                <option>已过期</option>
+              </select>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">搜索</button>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left"><input type="checkbox" class="rounded border-gray-300"></th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">账号类型</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">账号名称</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">联系人</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">手机号</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">VIP标识</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">VIP有效期</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">剩余天数</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">状态</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3"><input type="checkbox" class="rounded border-gray-300"></td>
+                  <td class="px-4 py-3">分公司</td>
+                  <td class="px-4 py-3">华东分公司</td>
+                  <td class="px-4 py-3">张总</td>
+                  <td class="px-4 py-3">13800001001</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">是</span></td>
+                  <td class="px-4 py-3">2029-12-31</td>
+                  <td class="px-4 py-3 text-primary">1275 天</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">有效</span></td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-primary text-sm">查看详情</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3"><input type="checkbox" class="rounded border-gray-300"></td>
+                  <td class="px-4 py-3">个人</td>
+                  <td class="px-4 py-3">王小明</td>
+                  <td class="px-4 py-3">王小明</td>
+                  <td class="px-4 py-3">15912345678</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">是</span></td>
+                  <td class="px-4 py-3">2029-05-24</td>
+                  <td class="px-4 py-3 text-primary">1054 天</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">有效</span></td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-primary text-sm">查看详情</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 首页内容管理 -->
+        <div id="admin-home-config" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">首页内容管理</h2>
+            <div class="flex border-b border-gray-200 mb-6">
+              <div class="px-4 py-2 tab-active cursor-pointer text-sm font-medium">轮播图管理</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">喜报数据管理</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">功能入口配置</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">教程入口配置</div>
+            </div>
+            <div class="flex justify-between items-center mb-4">
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">+ 新增轮播图</button>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="border border-gray-200 rounded-xl overflow-hidden">
+                <div class="h-32 bg-gradient-to-r from-blue-500 to-blue-400 flex items-center justify-center text-white font-bold">轮播图1</div>
+                <div class="p-3">
+                  <p class="text-sm font-medium">品牌发布会</p>
+                  <p class="text-xs text-gray-500 mt-1">排序：1 · 已启用</p>
+                  <div class="flex gap-2 mt-2">
+                    <button class="text-xs text-primary">编辑</button>
+                    <button class="text-xs text-red-500">删除</button>
+                  </div>
+                </div>
+              </div>
+              <div class="border border-gray-200 rounded-xl overflow-hidden">
+                <div class="h-32 bg-gradient-to-r from-blue-600 to-blue-500 flex items-center justify-center text-white font-bold">轮播图2</div>
+                <div class="p-3">
+                  <p class="text-sm font-medium">夏季招商大会</p>
+                  <p class="text-xs text-gray-500 mt-1">排序：2 · 已启用</p>
+                  <div class="flex gap-2 mt-2">
+                    <button class="text-xs text-primary">编辑</button>
+                    <button class="text-xs text-red-500">删除</button>
+                  </div>
+                </div>
+              </div>
+              <div class="border border-gray-200 rounded-xl overflow-hidden">
+                <div class="h-32 bg-gradient-to-r from-sky-500 to-blue-500 flex items-center justify-center text-white font-bold">轮播图3</div>
+                <div class="p-3">
+                  <p class="text-sm font-medium">新功能上线</p>
+                  <p class="text-xs text-gray-500 mt-1">排序：3 · 已启用</p>
+                  <div class="flex gap-2 mt-2">
+                    <button class="text-xs text-primary">编辑</button>
+                    <button class="text-xs text-red-500">删除</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 公告管理 -->
+        <div id="admin-notice" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-800">公告管理</h2>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">+ 新增公告</button>
+            </div>
+            <div class="flex gap-3 mb-4">
+              <input type="text" placeholder="公告标题" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:border-primary focus:outline-none">
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部状态</option>
+                <option>已发布</option>
+                <option>已下架</option>
+              </select>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">搜索</button>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">公告标题</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">公告类型</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">发布人</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">发布时间</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">状态</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">阅读量</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">系统维护通知</td>
+                  <td class="px-4 py-3">通知</td>
+                  <td class="px-4 py-3">管理员</td>
+                  <td class="px-4 py-3">2026-07-01 10:00</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">已发布</span></td>
+                  <td class="px-4 py-3">1,234</td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-red-500 text-sm">删除</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">新功能上线活动</td>
+                  <td class="px-4 py-3">活动</td>
+                  <td class="px-4 py-3">管理员</td>
+                  <td class="px-4 py-3">2026-06-28 14:30</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">已发布</span></td>
+                  <td class="px-4 py-3">2,567</td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-red-500 text-sm">删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 教程管理 -->
+        <div id="admin-course" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-800">教程管理</h2>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">+ 新增教程</button>
+            </div>
+            <div class="flex gap-3 mb-4">
+              <input type="text" placeholder="教程标题" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:border-primary focus:outline-none">
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部类型</option>
+                <option>视频</option>
+                <option>文档</option>
+              </select>
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部状态</option>
+                <option>已上架</option>
+                <option>已下架</option>
+              </select>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">搜索</button>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">教程标题</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">类型</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">分类</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">发布时间</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">状态</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">浏览次数</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">AI云创入门教程</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">视频</span></td>
+                  <td class="px-4 py-3">快速上手</td>
+                  <td class="px-4 py-3">2026-06-20</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">已上架</span></td>
+                  <td class="px-4 py-3">3,421</td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-red-500 text-sm">删除</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">短视频运营指南</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">文档</span></td>
+                  <td class="px-4 py-3">操作指南</td>
+                  <td class="px-4 py-3">2026-06-18</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">已上架</span></td>
+                  <td class="px-4 py-3">1,892</td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-red-500 text-sm">删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 文档管理 -->
+        <div id="admin-doc" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-800">文档管理</h2>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">+ 新增文档</button>
+            </div>
+            <div class="flex gap-3 mb-4">
+              <input type="text" placeholder="文档标题" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:border-primary focus:outline-none">
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部类型</option>
+                <option>用户协议</option>
+                <option>隐私政策</option>
+                <option>新手文档</option>
+                <option>帮助文档</option>
+              </select>
+              <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+                <option>全部状态</option>
+                <option>已启用</option>
+                <option>已禁用</option>
+              </select>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm">搜索</button>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">文档标题</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">文档类型</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">适用页面</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">更新时间</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">状态</th>
+                  <th class="px-4 py-3 text-left text-gray-600 font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">批量剪辑 用户协议</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">用户协议</span></td>
+                  <td class="px-4 py-3">登录页、我的页</td>
+                  <td class="px-4 py-3">2026-06-01</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">已启用</span></td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-gray-400 text-sm cursor-not-allowed" disabled>删除</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">批量剪辑 隐私政策</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">隐私政策</span></td>
+                  <td class="px-4 py-3">登录页、我的页</td>
+                  <td class="px-4 py-3">2026-06-01</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">已启用</span></td>
+                  <td class="px-4 py-3">
+                    <button class="text-primary text-sm mr-2">查看</button>
+                    <button class="text-primary text-sm mr-2">编辑</button>
+                    <button class="text-gray-400 text-sm cursor-not-allowed" disabled>删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 系统配置 -->
+        <div id="admin-system" class="admin-content">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">系统配置</h2>
+            <div class="flex border-b border-gray-200 mb-6">
+              <div class="px-4 py-2 tab-active cursor-pointer text-sm font-medium">品牌配置</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">版本管理</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">全局参数</div>
+              <div class="px-4 py-2 tab-inactive cursor-pointer text-sm font-medium">日志管理</div>
+            </div>
+            <div class="max-w-2xl space-y-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">APP Logo</label>
+                <div class="w-24 h-24 bg-primary rounded-xl flex items-center justify-center text-white text-2xl font-bold">云</div>
+                <button class="mt-2 text-sm text-primary">更换图片</button>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">后台 Logo</label>
+                <div class="w-24 h-24 bg-primary rounded-xl flex items-center justify-center text-white text-2xl font-bold">云</div>
+                <button class="mt-2 text-sm text-primary">更换图片</button>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">产品名称</label>
+                <input type="text" value="批量剪辑" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Slogan</label>
+                <input type="text" value="AI短视频创作与去水印工具" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">主色调</label>
+                <div class="flex items-center gap-3">
+                  <input type="color" value="#2563EB" class="w-12 h-10 rounded cursor-pointer">
+                  <span class="text-sm text-gray-600">#2563EB</span>
+                </div>
+              </div>
+              <div class="pt-4">
+                <button onclick="showToast('配置保存成功')" class="bg-primary text-white px-6 py-2 rounded-lg text-sm">保存配置</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- 弹窗 -->
+  <div id="confirmModal" class="modal">
+    <div class="bg-white rounded-2xl p-6 w-80 max-w-[90%]">
+      <h3 class="font-bold text-lg text-gray-800 mb-3">提示</h3>
+      <p id="confirmText" class="text-gray-600 text-sm mb-6">确定执行此操作吗？</p>
+      <div class="flex gap-3">
+        <button onclick="closeModal()" class="flex-1 py-2 border border-gray-300 rounded-xl text-sm">取消</button>
+        <button id="confirmBtn" onclick="closeModal()" class="flex-1 py-2 bg-primary text-white rounded-xl text-sm">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // 页面历史栈
+    let pageHistory = [];
+    let currentAppPage = 'page-app-login';
+    let bannerIndex = 0;
+
+    // 侧边目录切换
+    function toggleNavPanel() {
+      const panel = document.getElementById('navPanel');
+      panel.classList.toggle('collapsed');
+      panel.classList.toggle('expanded');
+    }
+
+    function showPageFromNav(type, pageId) {
+      document.getElementById('entryPage').style.display = 'none';
+      if (type === 'app') {
+        document.getElementById('appContainer').style.display = 'flex';
+        document.getElementById('adminContainer').style.display = 'none';
+        // 清空历史栈，确保底部导航正确
+        pageHistory = [];
+        navigateTo(pageId);
+      } else {
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('adminContainer').style.display = 'block';
+        if (pageId === 'page-admin-login') {
+          document.getElementById('page-admin-login').classList.add('active');
+          document.getElementById('adminLayout').classList.remove('active');
+        } else {
+          document.getElementById('page-admin-login').classList.remove('active');
+          document.getElementById('adminLayout').classList.add('active');
+          switchAdminPage(pageId);
+        }
+      }
+    }
+
+    // 入口切换
+    function showAppLogin() {
+      document.getElementById('entryPage').style.display = 'none';
+      document.getElementById('appContainer').style.display = 'flex';
+      document.getElementById('adminContainer').style.display = 'none';
+      navigateTo('page-app-login');
+    }
+
+    function showAdminLogin() {
+      document.getElementById('entryPage').style.display = 'none';
+      document.getElementById('appContainer').style.display = 'none';
+      document.getElementById('adminContainer').style.display = 'block';
+      document.getElementById('page-admin-login').classList.add('active');
+      document.getElementById('adminLayout').classList.remove('active');
+    }
+
+    // APP 页面导航
+    function navigateTo(pageId) {
+      if (currentAppPage && currentAppPage !== pageId) {
+        pageHistory.push(currentAppPage);
+      }
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      currentAppPage = pageId;
+      updateAppTabBar(pageId);
+      window.scrollTo(0, 0);
+    }
+
+    function goBack() {
+      if (pageHistory.length > 0) {
+        const prev = pageHistory.pop();
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(prev).classList.add('active');
+        currentAppPage = prev;
+        updateAppTabBar(prev);
+      }
+    }
+
+    function updateAppTabBar(pageId) {
+      const tabs = ['page-home', 'page-aicloud', 'page-watermark', 'page-profile'];
+      const tabBar = document.getElementById('appTabBar');
+      const labels = ['首页', 'AI 云创', 'AI 去水印', '我的'];
+      if (!tabs.includes(pageId)) {
+        tabBar.style.display = 'none';
+        return;
+      }
+      tabBar.style.display = 'flex';
+      const icons = ['🏠', '🎬', '💧', '👤'];
+      tabBar.innerHTML = '';
+      tabs.forEach((tab, i) => {
+        const active = tab === pageId ? 'nav-active' : 'nav-inactive';
+        tabBar.innerHTML += `<div class="flex flex-col items-center cursor-pointer ${active}" onclick="switchAppTab('${tab}')">
+          <span class="text-xl">${icons[i]}</span>
+          <span class="text-xs mt-0.5">${labels[i]}</span>
+        </div>`;
+      });
+    }
+
+    function switchAppTab(pageId) {
+      pageHistory = [];
+      navigateTo(pageId);
+    }
+
+    // 表单校验
+    function checkLoginForm() {
+      const phone = document.getElementById('loginPhone').value;
+      const pwd = document.getElementById('loginPwd').value;
+      const agree = document.getElementById('loginAgree').checked;
+      const btn = document.getElementById('loginBtn');
+      const valid = /^1[3-9]\d{9}$/.test(phone) && pwd.length >= 6 && agree;
+      btn.disabled = !valid;
+      btn.className = valid ? 'w-full bg-primary text-white font-medium py-3 rounded-xl transition' : 'w-full bg-gray-300 text-white font-medium py-3 rounded-xl transition';
+    }
+
+    function checkAdminLoginForm() {
+      const acc = document.getElementById('adminAccount').value;
+      const pwd = document.getElementById('adminPwd').value;
+      const btn = document.getElementById('adminLoginBtn');
+      const valid = acc.length >= 2 && pwd.length >= 6;
+      btn.disabled = !valid;
+      btn.className = valid ? 'w-full bg-primary text-white font-medium py-3 rounded-xl transition' : 'w-full bg-gray-300 text-white font-medium py-3 rounded-xl transition';
+    }
+
+    function togglePwd(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function doLogin() {
+      showToast('登录成功');
+      pageHistory = [];
+      navigateTo('page-home');
+    }
+
+    function doRegister() {
+      showToast('注册成功');
+      pageHistory = [];
+      navigateTo('page-home');
+    }
+
+    function doAdminLogin() {
+      document.getElementById('page-admin-login').classList.remove('active');
+      document.getElementById('adminLayout').classList.add('active');
+      switchAdminPage('admin-dashboard');
+      showToast('登录成功');
+    }
+
+    // 后台页面切换
+    function switchAdminPage(pageId) {
+      document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      document.querySelectorAll('.admin-menu-item').forEach(item => {
+        item.classList.remove('bg-primaryBg', 'text-primary');
+        item.classList.add('hover:bg-gray-50', 'text-gray-700');
+      });
+      const menuMap = {
+        'admin-dashboard': 0, 'admin-customer': 1, 'admin-customer-add': 1, 'admin-customer-detail': 1,
+        'admin-vip': 2, 'admin-home-config': 3, 'admin-notice': 4, 'admin-course': 5, 'admin-doc': 6, 'admin-system': 7
+      };
+      const menuItems = document.querySelectorAll('.admin-menu-item');
+      if (menuMap[pageId] !== undefined) {
+        const item = menuItems[menuMap[pageId]];
+        item.classList.remove('hover:bg-gray-50', 'text-gray-700');
+        item.classList.add('bg-primaryBg', 'text-primary');
+      }
+    }
+
+    // 去水印解析
+    function parseWatermark() {
+      const url = document.getElementById('watermarkUrl').value;
+      if (!url) {
+        showToast('请输入分享链接');
+        return;
+      }
+      showToast('正在解析...');
+      setTimeout(() => {
+        document.getElementById('watermarkEmpty').classList.add('hidden');
+        document.getElementById('watermarkResult').classList.remove('hidden');
+        showToast('解析完成');
+      }, 1500);
+    }
+
+    // 弹窗
+    function showConfirm(text, callback) {
+      document.getElementById('confirmText').innerText = text;
+      const btn = document.getElementById('confirmBtn');
+      btn.onclick = () => {
+        closeModal();
+        if (callback) callback();
+      };
+      document.getElementById('confirmModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('confirmModal').classList.remove('active');
+    }
+
+    // Toast
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('active');
+      setTimeout(() => toast.classList.remove('active'), 2000);
+    }
+
+    // 轮播图
+    setInterval(() => {
+      const slides = document.getElementById('bannerSlides');
+      const dots = document.querySelectorAll('.banner-dot');
+      if (slides) {
+        bannerIndex = (bannerIndex + 1) % 3;
+        slides.style.transform = `translateX(-${bannerIndex * 100}%)`;
+        dots.forEach((d, i) => {
+          d.classList.toggle('bg-white', i === bannerIndex);
+          d.classList.toggle('bg-white/50', i !== bannerIndex);
+        });
+      }
+    }, 3000);
+
+    // 页面加载后默认显示入口
+    window.onload = () => {
+      // 默认入口页已显示
+    };
+  </script>
+
+  <!-- 侧边页面切换目录 -->
+  <div id="navPanel" class="nav-panel collapsed">
+    <div class="nav-toggle" onclick="toggleNavPanel()" title="页面目录">📑</div>
+    <div class="nav-content">
+      <div class="nav-group">
+        <div class="nav-group-title">APP 端</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-app-login')">登录页</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-app-register')">注册页</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-home')">首页</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-study')">学习专区</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-brand')">品牌专区</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-contact')">信息咨询</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-guide')">新手指南</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-aicloud')">AI 云创</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-aicloud-edit')">AI 云创-编辑</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-aicloud-progress')">AI 云创-进度</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-watermark')">AI 去水印</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-profile')">我的</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-profile-edit')">编辑资料</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-service')">联系客服</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-user-agreement')">用户协议</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-privacy-policy')">隐私政策</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Web 管理后台</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','page-admin-login')">后台登录</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-dashboard')">数据统计</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-customer')">客户管理</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-customer-add')">新增账号</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-customer-detail')">账号详情</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-vip')">会员VIP管理</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-home-config')">首页内容管理</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-notice')">公告管理</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-course')">教程管理</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-doc')">文档管理</div>
+        <div class="nav-item" onclick="showPageFromNav('admin','admin-system')">系统配置</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
