@@ -140,6 +140,11 @@
     <string name="preview_placeholder">无视频预览</string>
     <string name="save_success">保存成功</string>
     <string name="save_failed">保存失败，请检查存储权限</string>
+    <string name="download_start">开始下载</string>
+    <string name="download_success">下载完成，已保存到相册</string>
+    <string name="download_failed">下载失败，请重试</string>
+    <string name="text_copied">已复制</string>
+    <string name="text_empty">暂无文本内容</string>
     <string name="nickname_error">昵称长度需在 2-20 个字符之间</string>
     <string name="save_profile_success">保存成功</string>
     <string name="dial_failed">拨号失败，请检查设备权限</string>

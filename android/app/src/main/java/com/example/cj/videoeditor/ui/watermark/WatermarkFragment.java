@@ -1,8 +1,11 @@
 package com.example.cj.videoeditor.ui.watermark;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +37,7 @@ import com.example.cj.videoeditor.network.dto.ComputingConsumeDto;
 import com.example.cj.videoeditor.network.dto.WatermarkParseBody;
 import com.example.cj.videoeditor.network.dto.WatermarkParseDto;
 import com.example.cj.videoeditor.utils.AppConfig;
+import com.example.cj.videoeditor.utils.DownloadUtil;
 import com.example.cj.videoeditor.utils.SharedPrefUtil;
 import com.example.cj.videoeditor.utils.ToastUtil;
 
@@ -222,7 +226,7 @@ public class WatermarkFragment extends Fragment {
                         if (data != null && data.getRemain() != null) {
                             SharedPrefUtil.putInt(requireContext(), AppConfig.SP_KEY_COMPUTE_USED, total - data.getRemain().intValue());
                         }
-                        ToastUtil.show(getContext(), R.string.save_success);
+                        doSaveMedia();
                     }
 
                     @Override
@@ -237,5 +241,50 @@ public class WatermarkFragment extends Fragment {
                                 .show();
                     }
                 });
+    }
+
+    private void doSaveMedia() {
+        Context context = getContext();
+        if (context == null) return;
+
+        switch (currentTab) {
+            case 0: // 视频
+                if (TextUtils.isEmpty(result.videoUrl)) {
+                    ToastUtil.show(context, R.string.preview_placeholder);
+                    return;
+                }
+                ToastUtil.show(context, R.string.download_start);
+                DownloadUtil.downloadVideo(context, result.videoUrl, (success, localUri) -> {
+                    if (isAdded() && getContext() != null) {
+                        ToastUtil.show(getContext(), success ? R.string.download_success : R.string.download_failed);
+                    }
+                });
+                break;
+            case 1: // 图片
+                if (result.images == null || result.images.isEmpty()) {
+                    ToastUtil.show(context, R.string.empty_data);
+                    return;
+                }
+                ToastUtil.show(context, R.string.download_start);
+                DownloadUtil.downloadImage(context, result.images.get(0), (success, localUri) -> {
+                    if (isAdded() && getContext() != null) {
+                        ToastUtil.show(getContext(), success ? R.string.download_success : R.string.download_failed);
+                    }
+                });
+                break;
+            case 2: // 文本
+                if (TextUtils.isEmpty(result.text)) {
+                    ToastUtil.show(context, R.string.text_empty);
+                    return;
+                }
+                ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                if (cm != null) {
+                    cm.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.app_name), result.text));
+                    ToastUtil.show(context, R.string.text_copied);
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
