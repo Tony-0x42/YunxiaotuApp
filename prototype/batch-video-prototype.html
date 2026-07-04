@@ -357,25 +357,143 @@
             <div class="flex-1 py-3 text-center text-sm tab-inactive">文档</div>
           </div>
           <div class="p-4 space-y-3">
-            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer">
+            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer" onclick="navigateTo('page-study-video-aicloud')">
               <div class="w-24 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">▶️</div>
               <div class="flex-1">
                 <h4 class="font-medium text-gray-800 text-sm">AI云创入门教程</h4>
                 <p class="text-xs text-gray-500 mt-1">视频 · 2026-06-20</p>
               </div>
             </div>
-            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer">
+            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer" onclick="navigateTo('page-study-doc-operation')">
               <div class="w-24 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">📄</div>
               <div class="flex-1">
                 <h4 class="font-medium text-gray-800 text-sm">短视频运营指南</h4>
                 <p class="text-xs text-gray-500 mt-1">文档 · 2026-06-18</p>
               </div>
             </div>
-            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer">
+            <div class="bg-white rounded-xl p-3 flex gap-3 shadow-sm cursor-pointer" onclick="navigateTo('page-study-video-watermark')">
               <div class="w-24 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">▶️</div>
               <div class="flex-1">
                 <h4 class="font-medium text-gray-800 text-sm">去水印功能详解</h4>
                 <p class="text-xs text-gray-500 mt-1">视频 · 2026-06-15</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 学习专区 - 视频详情：AI云创入门教程 -->
+      <div id="page-study-video-aicloud" class="page bg-gray-50">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">教程详情</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar pb-4">
+          <div class="bg-black h-52 flex items-center justify-center">
+            <div class="text-center text-white">
+              <span class="text-5xl">▶️</span>
+              <p class="text-sm mt-3">AI云创入门教程</p>
+            </div>
+          </div>
+          <div class="bg-white p-4 shadow-sm mb-3">
+            <h2 class="font-bold text-gray-800 text-base mb-2">AI云创入门教程</h2>
+            <div class="flex items-center gap-3 text-xs text-gray-500 mb-3">
+              <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded">视频</span>
+              <span>2026-06-20</span>
+              <span>浏览 3,421</span>
+            </div>
+            <p class="text-sm text-gray-600 leading-relaxed">本教程将带你从零开始了解 AI 云创功能，包括如何创建视频组、上传素材、进行 AI 分割、配置分镜头以及批量生成成片。</p>
+          </div>
+          <div class="bg-white p-4 shadow-sm">
+            <h3 class="font-bold text-gray-800 text-sm mb-3">相关推荐</h3>
+            <div class="space-y-3">
+              <div class="flex gap-3 cursor-pointer" onclick="navigateTo('page-study-video-watermark')">
+                <div class="w-20 h-14 bg-gray-200 rounded-lg flex items-center justify-center text-lg">▶️</div>
+                <div>
+                  <p class="text-sm text-gray-800">去水印功能详解</p>
+                  <p class="text-xs text-gray-500 mt-1">视频 · 2026-06-15</p>
+                </div>
+              </div>
+              <div class="flex gap-3 cursor-pointer" onclick="navigateTo('page-study-doc-operation')">
+                <div class="w-20 h-14 bg-gray-200 rounded-lg flex items-center justify-center text-lg">📄</div>
+                <div>
+                  <p class="text-sm text-gray-800">短视频运营指南</p>
+                  <p class="text-xs text-gray-500 mt-1">文档 · 2026-06-18</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 学习专区 - 文档详情：短视频运营指南 -->
+      <div id="page-study-doc-operation" class="page bg-white">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">文档详情</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-5">
+          <h2 class="font-bold text-gray-800 text-lg mb-2">短视频运营指南</h2>
+          <div class="flex items-center gap-3 text-xs text-gray-500 mb-5">
+            <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">文档</span>
+            <span>2026-06-18</span>
+            <span>浏览 1,892</span>
+          </div>
+          <div class="space-y-4 text-sm text-gray-700 leading-relaxed">
+            <p>短视频运营的核心在于内容定位、账号搭建、流量获取与变现转化。本指南将从这四个维度为你系统梳理运营思路。</p>
+            <h3 class="font-bold text-gray-800">一、内容定位</h3>
+            <p>明确目标受众与内容垂类，选择适合自己的赛道，保持内容风格的统一性与持续性。</p>
+            <h3 class="font-bold text-gray-800">二、账号搭建</h3>
+            <p>完善账号主页信息，包括头像、昵称、简介与背景图，使用户在第一时间了解账号价值。</p>
+            <h3 class="font-bold text-gray-800">三、流量获取</h3>
+            <p>通过热点选题、优质封面、黄金前 3 秒与互动引导，提升视频的完播率与推荐权重。</p>
+            <h3 class="font-bold text-gray-800">四、变现转化</h3>
+            <p>结合产品特点设计转化链路，利用批量剪辑批量生成带货视频，提升内容产出效率。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 学习专区 - 视频详情：去水印功能详解 -->
+      <div id="page-study-video-watermark" class="page bg-gray-50">
+        <div class="h-12 bg-white flex items-center px-4 border-b border-gray-100">
+          <span class="text-xl cursor-pointer" onclick="goBack()">←</span>
+          <span class="flex-1 text-center font-medium">教程详情</span>
+          <span class="w-6"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scrollbar pb-4">
+          <div class="bg-black h-52 flex items-center justify-center">
+            <div class="text-center text-white">
+              <span class="text-5xl">▶️</span>
+              <p class="text-sm mt-3">去水印功能详解</p>
+            </div>
+          </div>
+          <div class="bg-white p-4 shadow-sm mb-3">
+            <h2 class="font-bold text-gray-800 text-base mb-2">去水印功能详解</h2>
+            <div class="flex items-center gap-3 text-xs text-gray-500 mb-3">
+              <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded">视频</span>
+              <span>2026-06-15</span>
+              <span>浏览 2,156</span>
+            </div>
+            <p class="text-sm text-gray-600 leading-relaxed">本教程详细讲解 AI 去水印功能的使用方法，包括如何粘贴短视频链接、解析视频、预览去水印效果以及保存到相册。</p>
+          </div>
+          <div class="bg-white p-4 shadow-sm">
+            <h3 class="font-bold text-gray-800 text-sm mb-3">相关推荐</h3>
+            <div class="space-y-3">
+              <div class="flex gap-3 cursor-pointer" onclick="navigateTo('page-study-video-aicloud')">
+                <div class="w-20 h-14 bg-gray-200 rounded-lg flex items-center justify-center text-lg">▶️</div>
+                <div>
+                  <p class="text-sm text-gray-800">AI云创入门教程</p>
+                  <p class="text-xs text-gray-500 mt-1">视频 · 2026-06-20</p>
+                </div>
+              </div>
+              <div class="flex gap-3 cursor-pointer" onclick="navigateTo('page-study-doc-operation')">
+                <div class="w-20 h-14 bg-gray-200 rounded-lg flex items-center justify-center text-lg">📄</div>
+                <div>
+                  <p class="text-sm text-gray-800">短视频运营指南</p>
+                  <p class="text-xs text-gray-500 mt-1">文档 · 2026-06-18</p>
+                </div>
               </div>
             </div>
           </div>
@@ -2311,6 +2429,9 @@
         <div class="nav-item" onclick="showPageFromNav('app','page-app-register')">注册页</div>
         <div class="nav-item" onclick="showPageFromNav('app','page-home')">首页</div>
         <div class="nav-item" onclick="showPageFromNav('app','page-study')">学习专区</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-study-video-aicloud')">教程-AI云创入门</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-study-doc-operation')">教程-运营指南</div>
+        <div class="nav-item" onclick="showPageFromNav('app','page-study-video-watermark')">教程-去水印详解</div>
         <div class="nav-item" onclick="showPageFromNav('app','page-brand')">品牌专区</div>
         <div class="nav-item" onclick="showPageFromNav('app','page-contact')">信息咨询</div>
         <div class="nav-item" onclick="showPageFromNav('app','page-guide')">新手指南</div>
